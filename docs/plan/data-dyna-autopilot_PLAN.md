@@ -125,9 +125,23 @@ DD-P0-S1 core workspace + event contract
   -> DD-P4-S1 merchant review + adoption contracts
   -> DD-P5-S1 effect/guardrail/evidence loop
   -> DD-CLOSEOUT-S1 readiness audit + handoff
+  -> PACK_COMPLETE terminal parser state only after accepted closeout
 ```
 
-Accepted review of each stage activates the next stage in this order. Do not jump over intermediate slices.
+Accepted review of each stage activates the next stage in this order. Do not jump over intermediate slices. `currentWave/maxWaves` or any human wave count is not completion evidence.
+
+## Hard Closeout Guard
+
+Closeout is forbidden unless `docs/plan/README.md` and `docs/plan/data-dyna-autopilot_WORKSET.md` parse as:
+
+```text
+active slice: PACK_COMPLETE
+owner: closeout
+state: DONE
+remaining non-deferred stages: none
+```
+
+If `closeout` is dispatched while any implementation/review slice remains active, the closeout route is premature and must hand back to the active slice owner instead of claiming objective completion.
 
 ## Slice Definitions
 
@@ -219,7 +233,7 @@ stop_boundary:
 #### `DD-P1-S1` — external fact snapshots and business projections
 
 - Owner: `execute-plan`
-- State: `queued`
+- State: `READY`
 - Priority: `high`
 
 目标：
@@ -235,9 +249,10 @@ stop_boundary:
 
 Verification target:
 
-1. Projection tests over fixtures.
-2. Migration/schema validation.
-3. `git diff --check`.
+1. Projection tests over raw event and Datamesh RFM fixtures.
+2. Migration/schema snapshot validation for projection and RFM tables.
+3. `npm test` and `npm run typecheck`.
+4. `git diff --check`.
 
 done_when:
 
@@ -259,26 +274,27 @@ stop_boundary:
 
 #### `DD-P1-S2` — independent-café profile, segment, and metric snapshots
 
-- Owner: `execute-plan`
-- State: `queued`
+- Owner: `execution-reality-audit`
+- State: `READY_FOR_REVIEW`
 - Priority: `high`
 
 目标：
 
-- Build deterministic store profile, restaurant segment, and first metric snapshots for independent cafés.
+- Build deterministic store profile, restaurant segment, and first metric snapshots for independent cafés from DD-P1-S1 projections.
 
 交付物：
 
-1. Schemas/models for store profile snapshots, menu/order/time-period/RFM snapshots, merchant confirmations, and restaurant_segments.
-2. Metric definitions for the first independent-café themes: repurchase, add-on/combo, daypart, menu funnel, channel conversion, guardrail basics.
-3. Snapshot worker or pure functions over fixtures.
-4. Tests proving numerator/denominator/window definitions for selected metrics.
+1. Minimal schema/model surfaces for store profile snapshots, restaurant segment candidates, merchant confirmations, and metric snapshots.
+2. Deterministic metric definitions for a bounded first set: `repurchase_90d_rate`, `avg_order_value`, `refund_rate`, and `checkout_started_cart_rate`.
+3. Pure snapshot rebuild function over projection fixtures and explicit merchant confirmation fixtures.
+4. Tests proving numerator/denominator/window/source/guardrail definitions and deterministic segment candidate output.
 
 Verification target:
 
-1. Unit tests for at least three core metrics.
-2. Fixture-based segment candidate generation.
-3. `git diff --check`.
+1. Add fixture tests for the four bounded metrics and one independent-café segment candidate.
+2. Assert each metric definition carries numerator, denominator, window, owner/source, projection input refs, and guardrail relation.
+3. Assert segment candidate carries label, confidence, evidence_refs, and confirmation status without LLM classification.
+4. Run `npm test`, `npm run typecheck`, `git diff --check`, `plan_sync`, and parser consistency probe.
 
 done_when:
 
@@ -300,8 +316,8 @@ stop_boundary:
 
 #### `DD-P2-S1` — peer benchmark and opportunity gap engine
 
-- Owner: `execute-plan`
-- State: `queued`
+- Owner: `execution-reality-audit`
+- State: `ACCEPTED`
 - Priority: `high`
 
 目标：
@@ -319,7 +335,8 @@ Verification target:
 
 1. Fixture test for benchmark and opportunity gap generation.
 2. Validation that small samples are flagged weak/insufficient.
-3. `git diff --check`.
+3. Assert benchmark/gap outputs omit individual peer store/customer identities and carry aggregate evidence refs only.
+4. `npm test`, `npm run typecheck`, `git diff --check`, `plan_sync`, and parser consistency probe.
 
 done_when:
 
@@ -341,8 +358,8 @@ stop_boundary:
 
 #### `DD-P3-S1` — Pi Agent sidecar runtime foundation
 
-- Owner: `execute-plan`
-- State: `queued`
+- Owner: `execution-reality-audit`
+- State: `ACCEPTED`
 - Priority: `high`
 
 目标：
@@ -358,9 +375,10 @@ stop_boundary:
 
 Verification target:
 
-1. Unit/contract test for context bundle serialization.
-2. Agent run audit fixture can record model/session/tool event metadata without writing facts.
-3. `git diff --check`.
+1. Unit/contract test for context bundle serialization and fixture-sidecar invocation.
+2. Agent run audit fixture can record model/session/tool event metadata without writing orders, metrics, benchmarks, evidence facts, or business configs.
+3. Migration/schema snapshot validation for `agent_runs` and `agent_run_events`.
+4. `npm test`, `npm run typecheck`, `git diff --check`, `plan_sync`, and parser consistency probe.
 
 done_when:
 
@@ -382,8 +400,8 @@ stop_boundary:
 
 #### `DD-P3-S2` — agent tools, prompts, skills, and deterministic validator
 
-- Owner: `execute-plan`
-- State: `queued`
+- Owner: `execution-reality-audit`
+- State: `ACCEPTED`
 - Priority: `high`
 
 目标：
@@ -403,7 +421,8 @@ Verification target:
 1. Tool schema tests for allowed tools and denied execution-like tools.
 2. Structured output validation tests for valid/invalid experiment plans.
 3. Validator tests for requires_confirmation, rollback_supported, guardrails, sample size, and missing evidence.
-4. `git diff --check`.
+4. Prompt/skill text tests or probes proving hypothesis generation only, not fact creation or direct action execution.
+5. `npm test`, `npm run typecheck`, `git diff --check`, `plan_sync`, and parser consistency probe.
 
 done_when:
 
@@ -425,8 +444,8 @@ stop_boundary:
 
 #### `DD-P4-S1` — merchant review, adoption, and action lifecycle contracts
 
-- Owner: `execute-plan`
-- State: `queued`
+- Owner: `execution-reality-audit`
+- State: `ACCEPTED`
 - Priority: `medium`
 
 目标：
@@ -442,9 +461,11 @@ stop_boundary:
 
 Verification target:
 
-1. API/schema tests for accept, reject, modify, apply, revert, and review-viewed events.
-2. State transition tests rejecting invalid lifecycle jumps.
-3. `git diff --check`.
+1. API/schema tests for review submission, view, accept, reject, modify, apply-record, revert-record, and review-viewed event payloads.
+2. State transition tests rejecting invalid lifecycle jumps and blocking apply/revert records before explicit merchant acceptance.
+3. Preference confirmation tests proving rejection text only creates a candidate until explicit merchant confirmation.
+4. Migration/schema snapshot or SQL text proof that merchant review/adoption records are Core-persisted, while PostHog remains an optional async mirror.
+5. `npm test`, `npm run typecheck`, `git diff --check`, `plan_sync`, and parser consistency probe.
 
 done_when:
 
@@ -466,8 +487,8 @@ stop_boundary:
 
 #### `DD-P5-S1` — effect review, guardrail measurement, and Evidence Store
 
-- Owner: `execute-plan`
-- State: `queued`
+- Owner: `execution-reality-audit`
+- State: `ACCEPTED`
 - Priority: `medium`
 
 目标：
@@ -483,9 +504,10 @@ stop_boundary:
 
 Verification target:
 
-1. Fixture test for an accepted/applied plan producing effect and guardrail result.
+1. Fixture test for an accepted/applied plan producing deterministic action effect and guardrail result from before/after metric snapshots.
 2. Evidence record test requiring segment + gap/problem + intervention + outcome + guardrail + adoption.
-3. `git diff --check`.
+3. Weak sample / needs_more_data test and guardrail-degradation-not-clean-success test.
+4. `npm test`, `npm run typecheck`, `git diff --check`, `plan_sync`, and parser consistency probe.
 
 done_when:
 
@@ -508,7 +530,7 @@ stop_boundary:
 #### `DD-CLOSEOUT-S1` — readiness audit and next-plane handoff
 
 - Owner: `execution-reality-audit`
-- State: `queued`
+- State: `ACCEPTED`
 - Priority: `medium`
 
 目标：
@@ -545,6 +567,39 @@ stop_boundary:
 
 1. Do not mark full objective done while residual implementation or review gaps remain.
 2. Do not create a second control-plane root.
+
+#### `PACK_COMPLETE` — terminal parser state
+
+- Owner: `closeout`
+- State: `DONE`
+- Priority: `terminal`
+
+目标：
+
+- Represent full objective completion only after all non-deferred stages have accepted review evidence and `DD-CLOSEOUT-S1` has updated README/STATUS/WORKSET to terminal truth.
+
+交付物：
+
+1. README `Current Active Slice` is `PACK_COMPLETE`.
+2. WORKSET `Active Stage` is `PACK_COMPLETE` with owner `closeout` and state `DONE`.
+3. No non-deferred stage remains unchecked or unaudited.
+
+done_when:
+
+1. All non-deferred stages have accepted review evidence or explicit deferred residuals.
+2. README/PLAN/STATUS/WORKSET parse as terminal `PACK_COMPLETE` truth.
+3. Repo-local closeout has preserved validation evidence and residual handoff.
+
+stop_boundary:
+
+1. Stop if any previous stage lacks accepted review evidence.
+2. Stop if `PACK_COMPLETE` would hide residual implementation or external integration work.
+3. Stop if parser truth still names any active slice other than `PACK_COMPLETE`.
+
+必须避免：
+
+1. Do not use wave count, cycle count, or scheduler route as completion proof.
+2. Do not mark `PACK_COMPLETE` before closeout audit acceptance.
 
 ## Exit Criteria
 

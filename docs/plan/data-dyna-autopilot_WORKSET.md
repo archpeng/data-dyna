@@ -2,57 +2,36 @@
 
 ## Stage Order
 
-- [ ] `DD-P0-S1` core workspace and shared Event Contract foundation
-- [ ] `DD-P0-S2` event ingestion API and raw event store
-- [ ] `DD-P1-S1` external fact snapshots and business projections
-- [ ] `DD-P1-S2` independent-café profile, segment, and metric snapshots
-- [ ] `DD-P2-S1` peer benchmark and opportunity gap engine
-- [ ] `DD-P3-S1` Pi Agent sidecar runtime foundation
-- [ ] `DD-P3-S2` agent tools, prompts, skills, and deterministic validator
-- [ ] `DD-P4-S1` merchant review, adoption, and action lifecycle contracts
-- [ ] `DD-P5-S1` effect review, guardrail measurement, and Evidence Store
-- [ ] `DD-CLOSEOUT-S1` readiness audit and next-plane handoff
+- [x] `DD-P0-S1` core workspace and shared Event Contract foundation
+- [x] `DD-P0-S2` event ingestion API and raw event store
+- [x] `DD-P1-S1` external fact snapshots and business projections
+- [x] `DD-P1-S2` independent-café profile, segment, and metric snapshots
+- [x] `DD-P2-S1` peer benchmark and opportunity gap engine
+- [x] `DD-P3-S1` Pi Agent sidecar runtime foundation
+- [x] `DD-P3-S2` agent tools, prompts, skills, and deterministic validator
+- [x] `DD-P4-S1` merchant review, adoption, and action lifecycle contracts
+- [x] `DD-P5-S1` effect review, guardrail measurement, and Evidence Store
+- [x] `DD-CLOSEOUT-S1` readiness audit and next-plane handoff
 
 ## Active Stage
 
-### `DD-P0-S1`
+### `PACK_COMPLETE`
 
-- Owner: `execute-plan`
-- State: `READY`
-- Priority: `highest`
+- Owner: `closeout`
+- State: `DONE`
+- Priority: `terminal`
 
 目标：
 
-- Turn the docs-only repo into the smallest runnable TypeScript workspace and define the first versioned Event Contract for the three-plane data loop.
+- close the pack through the repo-local closeout prompt surface
 
 必须交付：
 
-1. Minimal package/workspace scaffolding for `data-dyna` implementation.
-2. Shared event envelope and first event-name/domain schemas using Zod.
-3. Basic test/typecheck scripts or a documented minimal validation substitute.
-4. Documentation note linking the contract to roadmap/analyse SSOT decisions.
-
-done_when:
-
-1. A fresh executor can identify the package manager, contract source path, and validation command from repo files.
-2. Event envelope includes version, source, producer, identity, correlation, entity, properties, and idempotency fields.
-3. At least mini-program, POS, mobile-hq, Datamesh/system source enums are represented.
-4. Contract validation has proof from a command or explicitly recorded reason if dependency install is unavailable.
-
-stop_boundary:
-
-1. Stop and replan if choosing a framework/package manager requires user/product approval not present in docs.
-2. Stop before editing external producer repos.
-3. Stop if event contract tries to encode AI recommendations as facts.
-4. Stop if implementation requires secrets, Datamesh credentials, or production endpoints.
+1. final closeout summary and residual handoff
 
 必须避免：
 
-1. Do not build analytics dashboards in this slice.
-2. Do not introduce Kafka/Flink/ClickHouse/vector DB.
-3. Do not couple contract schemas to PostHog as the source of truth.
-4. Do not create Agent runtime before deterministic Core scaffolding exists.
-
+1. dispatching another execute/review phase from terminal parser truth
 ## Slice Ownership
 
 ### `DD-P0-S1`
@@ -144,12 +123,16 @@ stop_boundary:
 ### `DD-P5-S1`
 
 - Allowed repo surfaces:
-  - effect/guardrail/evidence schemas and workers
-  - before/after measurement tests
-  - evidence_record generation tests
+  - `src/evidence/evidence-store.ts`
+  - `migrations/0007_evidence_store.sql`
+  - `tests/evidence-dd-p5-s1.spec.ts`
+  - `docs/evidence-store-v1.md`
+  - `package.json` test script append only if needed
 - Disallowed surfaces:
   - causal overclaim beyond available evidence
   - LLM-authored evidence facts
+  - evidence records without merchant adoption refs
+  - hiding missing guardrail data
 
 ### `DD-CLOSEOUT-S1`
 
@@ -174,17 +157,32 @@ stop_boundary:
 | 7 | `DD-P3-S2` | `wave_plan -> execute -> review` | activate `DD-P4-S1` |
 | 8 | `DD-P4-S1` | `wave_plan -> execute -> review` | activate `DD-P5-S1` |
 | 9 | `DD-P5-S1` | `wave_plan -> execute -> review` | activate `DD-CLOSEOUT-S1` |
-| 10 | `DD-CLOSEOUT-S1` | `review/closeout` | repo-local closeout prompt surface |
+| 10 | `DD-CLOSEOUT-S1` | `review -> accepted-writeback` | activate `PACK_COMPLETE` only if full objective is audited |
+| terminal | `PACK_COMPLETE` | `closeout` | repo-local closeout prompt surface |
+
+`currentWave/maxWaves` or any scheduler wave count is not objective-completion proof; only parser truth `PACK_COMPLETE` can permit closeout.
+
+## Hard Closeout Guard
+
+Closeout is forbidden unless this WORKSET and `docs/plan/README.md` parse as:
+
+```text
+Active Stage: PACK_COMPLETE
+Owner: closeout
+State: DONE
+Remaining non-deferred stages: none
+```
+
+Closeout is allowed only because this WORKSET and README now parse as `PACK_COMPLETE`, owner `closeout`, state `DONE`, with no non-deferred stages remaining.
 
 ## Expected Verification
 
-For active `DD-P0-S1`:
+For terminal `PACK_COMPLETE` closeout:
 
-1. Inspect repo root to confirm no existing implementation scaffolding conflicts.
-2. Create/validate minimal package/workspace and event contract schema.
-3. Run the narrowest available validation command created by the slice, or record why dependency execution is unavailable.
-4. Run `git diff --check`.
-5. Keep `docs/plan/*` active slice unchanged until review accepts completion.
+1. Preserve accepted slice evidence for DD-P0 through DD-P5 and DD-CLOSEOUT.
+2. Preserve residuals for external producers, live Datamesh, production DB migration, privacy/governance, Agent provider credentials, and pilot deployment.
+3. Do not start external repo work or production/live integration from the closeout prompt surface without a new explicit plan.
+4. Keep README/PLAN/STATUS/WORKSET aligned on terminal parser state.
 
 General validation escalation as commands become available:
 
@@ -208,7 +206,55 @@ git diff --check
 
 ## Residual Queue
 
-- External producer SDK integration for mini-program, POS, and `mobile-hq` should become a separate cross-repo plan after Core contracts stabilize.
-- Production Datamesh connectivity and credentials should become a deployment/integration slice after fixture contract work.
-- Multi-merchant benchmark production governance needs privacy threshold and consent review before live use.
-- Agent model/provider credentials and Pi runtime deployment mode need environment-specific configuration after local sidecar contracts exist.
+Core residuals:
+
+- Apply migrations to a real PostgreSQL environment only under a production/deployment plan with credentials and rollback checks.
+- Wire durable workers/API handlers around the pure projection, snapshot, benchmark, merchant-review, and evidence functions.
+- Add operational idempotency/rebuild observability before live ingestion volume.
+
+Agent residuals:
+
+- Configure real Pi SDK/model/provider credentials and runtime deployment mode outside local fixture tests.
+- Register project-local Pi extension/tool descriptors in the chosen runtime package after deployment ownership is known.
+
+External integration residuals:
+
+- Create a new explicit cross-repo plan before editing mini-program, POS, `mobile-hq`, `hq-bff-service`, or `g-hq-orchestrator`.
+- Implement producer SDK/host bridge instrumentation against the accepted Event Contract and merchant-review event names.
+- Keep POS/backend order/payment/refund facts authoritative; frontend events remain attribution helpers.
+
+Data governance residuals:
+
+- Review peer benchmark privacy thresholds, consent, retention, and de-identification before live multi-merchant use.
+- Validate Datamesh RFM access to `report.crm.member_labels` with governed credentials; this pack used fixture/contracts only.
+
+Production ops residuals:
+
+- Add environment configuration, migration checks, monitoring/alerts, backup/restore, and incident runbooks before merchant pilot.
+- Run a governed pilot merchant validation plan; do not reinterpret directional before/after records as causal/statistical proof without a new method.
+
+## Machine Queue
+
+- active_step: `PACK_COMPLETE`
+- latest_completed_step: `PACK_COMPLETE`
+- intended_handoff: `autopilot-closeout`
+- latest_closeout_summary: Closed data-dyna-autopilot as PACK_COMPLETE.
+- latest_verification:
+  - `plan_sync /home/peng/dt-git/github/data-dyna/docs/plan: STATUS 10 done / 0 pending; WORKSET 10 done / 0 pending.`
+  - `README/STATUS/WORKSET readback confirms active slice PACK_COMPLETE and closeout/DONE terminal state.`
+  - `npm test passed across event contract, ingestion, projections, snapshots, benchmarks, agent sidecar/tools/validator, merchant review, and evidence-store specs.`
+  - `npm run typecheck passed via tsc --noEmit.`
+  - `git diff --check passed; git status remains dirty with the implementation pack uncommitted.`
+  - `docs/plan/README.md`
+  - `docs/plan/data-dyna-autopilot_PLAN.md`
+  - `docs/plan/data-dyna-autopilot_STATUS.md`
+  - `docs/plan/data-dyna-autopilot_WORKSET.md`
+  - `package.json`
+  - `package-lock.json`
+  - `tsconfig.json`
+  - `src/`
+  - `tests/`
+  - `migrations/`
+  - `docs/*-v1.md`
+  - `.pi/`
+- terminal: `true`

@@ -1,0 +1,22 @@
+{
+  "name": "data-dyna",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Deterministic Data Core and Evidence Service foundation for independent cafés.",
+  "scripts": {
+    "test": "tsx tests/event-contract.spec.ts && tsx tests/ingestion-handlers.spec.ts && tsx tests/projections-dd-p1-s1.spec.ts && tsx tests/snapshots-dd-p1-s2.spec.ts && tsx tests/benchmarks-dd-p2-s1.spec.ts && tsx tests/agent-dd-p3-s1.spec.ts && tsx tests/agent-dd-p3-s2.spec.ts && tsx tests/merchant-review-dd-p4-s1.spec.ts && tsx tests/evidence-dd-p5-s1.spec.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}
