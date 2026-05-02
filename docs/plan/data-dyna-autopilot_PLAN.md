@@ -148,7 +148,7 @@ If `closeout` is dispatched while any implementation/review slice remains active
 #### `DD-P0-S1` — core workspace and shared Event Contract foundation
 
 - Owner: `execute-plan`
-- State: `READY`
+- State: `ACCEPTED`
 - Priority: `highest`
 
 目标：
@@ -192,7 +192,7 @@ stop_boundary:
 #### `DD-P0-S2` — event ingestion API and raw event store
 
 - Owner: `execute-plan`
-- State: `queued`
+- State: `ACCEPTED`
 - Priority: `highest`
 
 目标：
@@ -233,7 +233,7 @@ stop_boundary:
 #### `DD-P1-S1` — external fact snapshots and business projections
 
 - Owner: `execute-plan`
-- State: `READY`
+- State: `ACCEPTED`
 - Priority: `high`
 
 目标：
@@ -275,7 +275,7 @@ stop_boundary:
 #### `DD-P1-S2` — independent-café profile, segment, and metric snapshots
 
 - Owner: `execution-reality-audit`
-- State: `READY_FOR_REVIEW`
+- State: `ACCEPTED`
 - Priority: `high`
 
 目标：
