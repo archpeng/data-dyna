@@ -1,12 +1,9 @@
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
-import { buildDataDynaApp } from "../src/app/app.ts";
 import { loadPostgresTestConfig } from "../src/app/config/postgres-test-config.ts";
 import { loadRuntimeConfig } from "../src/app/config/runtime-config.ts";
-import {
-  PostgresRawEventRepository,
-  type PostgresRawEventClient,
-} from "../src/app/repositories/postgres-raw-event-repository.ts";
+import { type PostgresRawEventClient } from "../src/app/repositories/postgres-raw-event-repository.ts";
+import { buildDataDynaRuntimeServer } from "../src/app/runtime-server.ts";
 import type { DataDynaEvent } from "../src/contracts/event-contract.ts";
 
 const require = createRequire(import.meta.url);
@@ -42,16 +39,20 @@ const duplicateEventId = `${runId}:event:duplicate-attempt`;
 const batchIdempotencyKey = `${runId}:batch:idempotency`;
 const batchEventId = `${runId}:batch:event`;
 
+const databaseUrl = loadPostgresTestConfig().databaseUrl;
 const client = new Client({
-  connectionString: loadPostgresTestConfig().databaseUrl,
+  connectionString: databaseUrl,
   application_name: "data-dyna-app-runtime-s4-spec",
 });
 
 await client.connect();
 
-const app = buildDataDynaApp({
-  config: loadRuntimeConfig({ DATA_DYNA_RUNTIME_ENV: "test" }),
-  rawEventStore: new PostgresRawEventRepository(client),
+const app = buildDataDynaRuntimeServer({
+  config: loadRuntimeConfig({
+    DATA_DYNA_RUNTIME_ENV: "test",
+    DATA_DYNA_DATABASE_URL: databaseUrl,
+  }),
+  logger: false,
 });
 
 try {

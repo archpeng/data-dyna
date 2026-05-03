@@ -2,80 +2,80 @@
 
 ## Current State
 
-- state: `READY`
-- owner: `execute-plan`
+- state: `DONE`
+- owner: `closeout`
 - route: `PLAN -> EXEC -> REVIEW -> REPLAN -> CLOSEOUT`
 - workstream: `data-dyna-testable-runtime-deployment`
-- pack_mode: `single-root docs/plan machine-compatible active-pack`
+- pack_mode: `single-root docs/plan machine-compatible completed-pack`
 - source_truth: `docs/roadmap/data-dyna-production-readiness-roadmap.md`, `docs/runtime-foundation-decision.md`, `src/app/README.md`, `docs/local-postgres.md`, completed production runtime foundation pack
 
 ## Current Step
 
-- active_step: `DD-P1-S1`
-- active_wave: `wave-1`
-- mode: `ready_for_execute`
-- intended_handoff: `execute-plan`
+- active_step: `PACK_COMPLETE`
+- active_wave: `wave-5`
+- mode: `pack_complete`
+- intended_handoff: `autopilot-closeout`
 
 ## Planned Stages
 
-- [ ] `DD-P1-S1` Docker runtime substrate
-- [ ] `DD-P1-S2` PostgreSQL-backed server startup
-- [ ] `DD-P1-S3` runtime smoke gate
-- [ ] `DD-P1-S4` Docker runbook and deployment preflight
-- [ ] `DD-P1-CLOSEOUT-S1` P1 closeout audit
+- [x] `DD-P1-S1` Docker runtime substrate
+- [x] `DD-P1-S2` PostgreSQL-backed server startup
+- [x] `DD-P1-S3` runtime smoke gate
+- [x] `DD-P1-S4` Docker runbook and deployment preflight
+- [x] `DD-P1-CLOSEOUT-S1` P1 closeout audit
 
 ## Immediate Focus
 
-### `DD-P1-S1`
+### `PACK_COMPLETE`
 
-- Owner: `execute-plan`
-- State: `READY`
-- Priority: `high`
+- Owner: `closeout`
+- State: `DONE`
+- Priority: `terminal`
 
 目标：
 
-- Add the minimal Dockerfile-based runtime substrate and runtime env contract needed to build and start the Fastify app without adding production platform complexity.
+- close the pack through the repo-local closeout prompt surface
 
 必须交付：
 
-1. `Dockerfile` for the app runtime using the repo's Node 24 requirement and `npm ci` lockfile install.
-2. `.dockerignore` that excludes heavy/local-only files while preserving source, migrations, package files, and runtime docs needed for the image.
-3. Package scripts or documented commands for Docker build and runtime start if they reduce ambiguity.
-4. `.env.example` or deployment doc updates showing the canonical runtime variables, especially `DATA_DYNA_DATABASE_URL`, `DATA_DYNA_HTTP_HOST`, and `DATA_DYNA_HTTP_PORT`.
-5. Validation evidence that local non-Docker tests and parser checks still pass.
-
-done_when:
-
-1. `Dockerfile` exists and uses the simplest Node 24 runtime path that can start `src/app/server.ts`.
-2. Docker build context is cleanly bounded by `.dockerignore` or an explicit decision not to add one.
-3. Runtime env contract names the canonical variables and does not introduce compatibility aliases unless they are required by an existing test.
-4. `npm ci`, `npm run typecheck`, `npm test`, `npm run check:plan`, and `git diff --check` pass.
-
-stop_boundary:
-
-1. Stop and replan if Docker build requires credentials, private registry access, or host-specific local paths.
-2. Stop and replan if implementing this slice requires production auth, tenancy, observability, cloud infrastructure, or external producer ownership.
-3. Stop and replan if the simplest Dockerfile requires changing deterministic Core contracts or migration semantics.
+1. final closeout summary and residual handoff
 
 必须避免：
 
-1. Do not add Kubernetes, Compose orchestration for multiple environments, or deployment platform abstractions in this slice.
-2. Do not add compatibility shims for old runtime config names unless a failing accepted test proves the need.
-3. Do not claim the service is production-deployed; this slice only creates a Docker-based testable substrate.
+1. dispatching another execute/review phase from terminal parser truth
+## Accepted Closeout Evidence
+
+- Audited `DD-P1-S1` through `DD-P1-S4` across Dockerfile, `.dockerignore`, runtime env contract, PostgreSQL-backed server startup, smoke gate, testable-runtime runbook, and validation evidence.
+- Verified the Docker/test runtime path with local PostgreSQL, migrations, image build, container start, `/healthz` wait, `npm run smoke:runtime`, and cleanup.
+- Preserved residuals for P2 auth/tenancy, P3 observability, P4 producer integration, P5 durable workers, P6 Agent runtime, cloud deployment, production database lifecycle, and secret management.
+- Recommended P2-lite auth/tenancy as the default next pack; P3 observability should follow before real producer traffic expansion.
+- Terminal writeback marked `DD-P1-CLOSEOUT-S1` done and this pack `PACK_COMPLETE` only after validation and parser checks passed.
 
 ## Machine State
 
-- active_step: `DD-P1-S1`
-- latest_completed_step: `none`
-- intended_handoff: `execute-plan`
-- latest_plan_summary: Created P1 testable runtime deployment pack with Dockerfile-first execution and simplification policy.
+- active_step: `PACK_COMPLETE`
+- latest_completed_step: `DD-P1-CLOSEOUT-S1`
+- intended_handoff: `autopilot-closeout`
+- latest_closeout_summary: Closed data-dyna-testable-runtime-deployment at PACK_COMPLETE.
 - latest_verification:
-  - `workspace_scan before planning: data-dyna main, one dirty roadmap doc from prior roadmap creation.`
-  - `plan_sync before planning: completed prerequisite packs remain 0 pending; production runtime foundation is 7 done / 0 pending.`
-  - `plan-creator skill and autopilot control-plane references were read before writeback.`
-  - `New active pack targets P1-lite/Testable Runtime Deployment and starts with DD-P1-S1.`
-- terminal: `false`
-
+  - `Closeout audited accepted DD-P1-S1 through DD-P1-S4 evidence across Dockerfile, .dockerignore, package scripts, runtime config, runtime server, smoke gate, tests, runbook, and residual handoff.`
+  - `Closeout validation passed: npm run db:test:up; npm run test:db:migrations; npm run test:app:repository; npm run docker:build; docker run data-dyna:testable-runtime on 127.0.0.1:13009; health wait probe; npm run smoke:runtime; npm run test:runtime; npm run test:app:workers; npm run check:boundaries; npm run check:schema-migrations; npm run typecheck; npm test; npm run check:plan; git diff --check.`
+  - `Cleanup verification passed: docker ps showed no data-dyna-runtime-smoke or data-dyna-postgres-test containers remained after validation cleanup.`
+  - `Terminal parser truth passed: docs/plan/README.md Current Active Slice is PACK_COMPLETE with intended_handoff autopilot-closeout; STATUS/WORKSET mark all 5 P1 stages done; npm run check:plan, git diff --check, and plan_sync docs/plan pass with data-dyna-testable-runtime-deployment at 5 done / 0 pending.`
+  - `Residuals remain explicit for P2 auth/tenancy, P3 observability, P4 producer integration, P5 durable workers, P6 Agent runtime, cloud deployment, production database lifecycle, and secret management; recommended next pack is P2-lite auth/tenancy, then P3 observability before real producer traffic.`
+  - `docs/plan/README.md`
+  - `docs/plan/data-dyna-testable-runtime-deployment_PLAN.md`
+  - `docs/plan/data-dyna-testable-runtime-deployment_STATUS.md`
+  - `docs/plan/data-dyna-testable-runtime-deployment_WORKSET.md`
+  - `docs/deployment/testable-runtime-deployment.md`
+  - `Dockerfile`
+  - `.dockerignore`
+  - `package.json`
+  - `src/app/config/runtime-config.ts`
+  - `src/app/runtime-server.ts`
+  - `src/app/server.ts`
+  - `scripts/smoke-runtime.mjs`
+- terminal: `true`
 ## Autopilot Transition Contract
 
 - `master_plan/completed` -> `wave_plan` for the active slice if extra wave planning is needed; otherwise `execute`.
@@ -128,8 +128,7 @@ npm run smoke:runtime
 
 ## Blockers
 
-- None currently known.
-- `docs/roadmap/data-dyna-production-readiness-roadmap.md` is an uncommitted planning artifact from the previous step and should be kept or committed with this planning work according to the user's next persistence request.
+- None currently known after DD-P1-CLOSEOUT-S1 review.
 
 ## Residuals / Notes
 

@@ -245,6 +245,39 @@ stop_boundary:
 2. Do not create a second control-plane root.
 3. Do not hide production hardening residuals behind the phrase “deployment complete.”
 
+#### `PACK_COMPLETE` — terminal parser state
+
+- Owner: `closeout`
+- State: `DONE`
+- Priority: `terminal`
+
+目标：
+
+- Represent P1 Docker/testable-runtime deployment completion only after all non-deferred P1 slices have accepted review evidence.
+
+交付物：
+
+1. README `Current Active Slice` is `PACK_COMPLETE` for this pack.
+2. WORKSET `Active Stage` is `PACK_COMPLETE` with owner `closeout` and state `DONE`.
+3. Residual handoff preserves P2/P3/P4/P5/P6 and cloud production hardening as successor work.
+
+done_when:
+
+1. All non-deferred P1 stages have accepted review evidence or explicit residuals.
+2. README/PLAN/STATUS/WORKSET parse as terminal `PACK_COMPLETE` truth.
+3. Repo-local closeout has preserved validation evidence and residual handoff.
+
+stop_boundary:
+
+1. Stop if any previous P1 stage lacks accepted review evidence.
+2. Stop if terminal state would hide production hardening residuals.
+3. Stop if parser truth still names any active slice other than `PACK_COMPLETE`.
+
+必须避免：
+
+1. Do not use wave count as completion proof.
+2. Do not mark complete before closeout audit acceptance.
+
 ## Continuous Wave Ladder
 
 | Order | Slice | Phase loop | Accepted-review next step |

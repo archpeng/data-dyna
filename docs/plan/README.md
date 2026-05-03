@@ -8,12 +8,10 @@
 
 ## Current Active Slice
 
-- `DD-P1-S1`
-
+- `PACK_COMPLETE`
 ## Intended Handoff
 
-- `execute-plan`
-
+- `autopilot-closeout`
 ## Queued Successor Pack
 
 - None currently defined in this control plane.
@@ -71,8 +69,13 @@ These invariants are the source-of-truth guard against the closeout drift that b
 
 - This is the single-root repo-local machine control plane for current `data-dyna` productionization planning.
 - Keep this README, the active `PLAN`, `STATUS`, and `WORKSET` aligned in the same writeback turn.
-- Active-slice phase reports should use `stepId = DD-P1-S1` while this active slice remains current.
-- `DD-P1-S1` starts the P1 testable runtime deployment pack with a Dockerfile-first substrate and simplification policy.
+- Active-slice phase reports should use `stepId = PACK_COMPLETE` only for the repo-local closeout prompt surface; routed `DD-P1-CLOSEOUT-S1` review has completed.
+- `data-dyna-testable-runtime-deployment` reached `PACK_COMPLETE` after `DD-P1-CLOSEOUT-S1` audited Dockerfile, runtime DB wiring, smoke gate, runbook, validation evidence, and residual handoff.
+- `DD-P1-S4` review accepted the Docker/testable-runtime runbook and preflight evidence and advanced the pack to `DD-P1-CLOSEOUT-S1`.
+- `DD-P1-S3` review accepted the runtime smoke gate evidence and advanced the pack to `DD-P1-S4`.
+- `DD-P1-S2` review accepted PostgreSQL-backed server startup evidence and advanced the pack to `DD-P1-S3`.
+- `DD-P1-S1` review accepted Dockerfile substrate evidence and advanced the pack to `DD-P1-S2`.
+- `DD-P1-S1` started the P1 testable runtime deployment pack with a Dockerfile-first substrate and simplification policy.
 - `DD-RUNTIME-S1` review accepted the runtime decision evidence and advanced the pack to `DD-RUNTIME-S2`.
 - `DD-RUNTIME-S2` review accepted the app/config/server skeleton evidence and advanced the pack to `DD-RUNTIME-S3`.
 - `DD-RUNTIME-S3` review accepted the PostgreSQL raw event repository evidence and advanced the pack to `DD-RUNTIME-S4`.
