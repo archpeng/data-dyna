@@ -1,8 +1,8 @@
 # Testable Runtime Deployment Runbook
 
-This runbook is the P1-lite Docker/test runtime path for `data-dyna`. It proves that the runtime image can start, connect to a migrated local PostgreSQL database, serve `/healthz`, and accept `/events` traffic through the smoke gate.
+This runbook is the P1/P2-lite Docker/test runtime path for `data-dyna`. It proves that the runtime image can start, connect to a migrated local PostgreSQL database, serve unauthenticated `/healthz`, and exercise authenticated `/events` traffic with tenant-safe local/test credentials through the smoke gate.
 
-It is not a production deployment runbook. It does not provide cloud rollout, production secrets, auth/tenancy, observability, external producer integration, durable workers, or Agent runtime ownership.
+It is not a production deployment runbook. It does not provide full IAM, OAuth/SSO, cloud secret management, production observability, external producer integration, durable workers, or Agent runtime ownership.
 
 ## Preconditions
 
@@ -16,12 +16,15 @@ It is not a production deployment runbook. It does not provide cloud rollout, pr
 
 `DATA_DYNA_DATABASE_URL` is the canonical runtime database seam.
 
+`DATA_DYNA_INGESTION_CREDENTIALS_JSON` is the P2-lite local/test credential seam for `POST /events` and `POST /events/batch`. `GET /healthz` stays unauthenticated. The token below is a placeholder example only; production secret injection remains outside this repo-local runbook.
+
 The commands below use two shell helper variables because the app container reaches the host database through `host.docker.internal`, while the host-side smoke script reaches the same database through `localhost`.
 
 ```bash
 export DATA_DYNA_SMOKE_PORT=13010
 export DATA_DYNA_HOST_DATABASE_URL=postgresql://data_dyna:data_dyna_local_password@localhost:55432/data_dyna_test
 export DATA_DYNA_CONTAINER_DATABASE_URL=postgresql://data_dyna:data_dyna_local_password@host.docker.internal:55432/data_dyna_test
+export DATA_DYNA_INGESTION_CREDENTIALS_JSON='[{"credentialId":"local-pos-store-a","token":"<local-placeholder-token-a>","merchantId":"merchant-local-a","storeIds":["store-local-a"],"producer":{"service":"pos-lite-cashier","environment":"test"},"source":"pos"}]'
 ```
 
 ## 1. Start and migrate local PostgreSQL
@@ -52,7 +55,7 @@ data-dyna:testable-runtime
 
 ## 3. Start the Docker runtime
 
-Remove any stale smoke container, then start the runtime in detached mode:
+Remove any stale smoke container, then start the runtime in detached mode with the placeholder P2 credential JSON:
 
 ```bash
 docker rm -f data-dyna-runtime-smoke 2>/dev/null || true
@@ -65,6 +68,7 @@ docker run -d \
   -e DATA_DYNA_HTTP_HOST=0.0.0.0 \
   -e DATA_DYNA_HTTP_PORT=3000 \
   -e DATA_DYNA_DATABASE_URL="$DATA_DYNA_CONTAINER_DATABASE_URL" \
+  -e DATA_DYNA_INGESTION_CREDENTIALS_JSON="$DATA_DYNA_INGESTION_CREDENTIALS_JSON" \
   data-dyna:testable-runtime
 ```
 
@@ -91,7 +95,7 @@ process.exit(1);
 NODE
 ```
 
-## 4. Run the HTTP smoke gate
+## 4. Run the authenticated HTTP smoke gate
 
 Run the smoke gate from the host. It uses real HTTP against the running runtime and verifies PostgreSQL side effects in `raw_events` and `invalid_raw_events`.
 
@@ -100,16 +104,20 @@ DATA_DYNA_RUNTIME_ENV=test \
 DATA_DYNA_HTTP_HOST=127.0.0.1 \
 DATA_DYNA_HTTP_PORT="$DATA_DYNA_SMOKE_PORT" \
 DATA_DYNA_DATABASE_URL="$DATA_DYNA_HOST_DATABASE_URL" \
+DATA_DYNA_INGESTION_CREDENTIALS_JSON="$DATA_DYNA_INGESTION_CREDENTIALS_JSON" \
 npm run smoke:runtime
 ```
 
 The smoke gate checks:
 
-- `GET /healthz`
-- accepted `POST /events`
-- duplicate `POST /events`
-- invalid `POST /events`
-- `POST /events/batch`
+- unauthenticated `GET /healthz`;
+- missing `Authorization` on `POST /events` returns `401` / `UNAUTHORIZED` plus `WWW-Authenticate: Bearer` with no raw or invalid persistence;
+- invalid bearer token on `POST /events` returns `401` / `UNAUTHORIZED` plus `WWW-Authenticate: Bearer` with no raw or invalid persistence;
+- authorized tenant-scoped `POST /events` returns `202` and persists `credentialId`, `merchantId`, `storeId`, and producer environment;
+- authorized duplicate `POST /events` returns `202` with `duplicate: true` and does not insert another raw event;
+- authorized tenant mismatch returns `403` / `TENANT_MISMATCH`, persists only `invalid_raw_events` audit context, and creates no accepted raw event;
+- authorized invalid payload returns `400` and persists invalid-event audit context;
+- authorized `POST /events/batch` accepts a tenant-scoped valid item.
 
 ## 5. Run the local validation ladder
 
@@ -150,21 +158,24 @@ npm run db:test:reset
 ## Troubleshooting
 
 - **Container cannot connect to PostgreSQL**: confirm the Docker run command includes `--add-host=host.docker.internal:host-gateway` and passes `DATA_DYNA_DATABASE_URL="$DATA_DYNA_CONTAINER_DATABASE_URL"`.
+- **Runtime exits immediately with missing auth config**: confirm the Docker run command passes `DATA_DYNA_INGESTION_CREDENTIALS_JSON` and that the JSON contains non-empty `credentialId`, `token`, `merchantId`, `storeIds`, `producer.service`, `producer.environment`, and `source` fields.
 - **Smoke script cannot connect to PostgreSQL**: the smoke script runs on the host, so pass `DATA_DYNA_DATABASE_URL="$DATA_DYNA_HOST_DATABASE_URL"` to `npm run smoke:runtime`.
+- **Smoke script reports missing ingestion credentials**: pass the same placeholder `DATA_DYNA_INGESTION_CREDENTIALS_JSON` to both `docker run` and the host-side `npm run smoke:runtime` command.
 - **Smoke script says migrated tables are missing**: rerun `npm run test:db:migrations` before starting the runtime.
+- **Smoke returns `401` for the authorized probe**: confirm the runtime container and smoke script received the same placeholder credential JSON.
 - **Port is already in use**: change `DATA_DYNA_SMOKE_PORT` and rerun the Docker and smoke commands.
-- **Runtime exits immediately**: inspect `docker logs data-dyna-runtime-smoke`; missing or non-PostgreSQL `DATA_DYNA_DATABASE_URL` is a startup error.
 - **Need to abandon the run**: run `docker rm -f data-dyna-runtime-smoke` and then `npm run db:test:down`.
 
 ## Explicit residuals
 
-This P1 path leaves the following work open for successor packs:
+This P2-lite path leaves the following work open for successor packs:
 
-- P2 auth/tenancy and tenant-safe event writes.
+- Production-readiness master tracker writeback and P3 successor-pack creation after P2 closeout is persisted.
 - P3 structured logs, metrics, traces, alerts, dashboards, and incident/runbook maturity.
 - P4 real POS, miniapp, mobile-hq, or backend producer instrumentation.
 - P5 durable worker queue, retries, checkpoints, dead letters, and idempotent background processing.
 - P6 full Agent runtime, real Pi provider integration, and production Agent governance.
+- Full IAM/OAuth/SSO/admin UI/self-service merchant permissions.
 - Cloud production deployment, rollout/rollback, backup/restore, production database lifecycle, and secret management.
 
 The recommended roadmap order remains P2 auth/tenancy before real producer traffic, then P3 observability before wider runtime expansion.

@@ -2,25 +2,23 @@
 
 ## Active Pack
 
-- `docs/plan/data-dyna-auth-tenancy-foundation_PLAN.md`
-- `docs/plan/data-dyna-auth-tenancy-foundation_STATUS.md`
-- `docs/plan/data-dyna-auth-tenancy-foundation_WORKSET.md`
+- `docs/plan/data-dyna-observability-foundation_PLAN.md`
+- `docs/plan/data-dyna-observability-foundation_STATUS.md`
+- `docs/plan/data-dyna-observability-foundation_WORKSET.md`
 
 ## Current Active Slice
 
-- `DD-P2-S1`
-
+- `DD-P3-S1`
 ## Intended Handoff
 
 - `execute-plan`
-
 ## Queued Successor Pack
 
 - `docs/plan/data-dyna-production-readiness-master_PLAN.md`
 - `docs/plan/data-dyna-production-readiness-master_STATUS.md`
 - `docs/plan/data-dyna-production-readiness-master_WORKSET.md`
-- Master tracker note: lightweight P2-P6 sequence tracker; the active concrete pack is `data-dyna-auth-tenancy-foundation`.
-- Activation note: `data-dyna-auth-tenancy-foundation` was activated after `data-dyna-testable-runtime-deployment` reached `PACK_COMPLETE`; next concrete work starts with `DD-P2-S1` contract-first auth/tenancy planning.
+- Master tracker note: lightweight P2-P6 sequence tracker; the active concrete pack is `data-dyna-observability-foundation`.
+- Activation note: `data-dyna-auth-tenancy-foundation` reached `PACK_COMPLETE`; master tracker writeback marked `DD-PR-MASTER-P2` done, activated `DD-PR-MASTER-P3`, and created `data-dyna-observability-foundation` as the concrete P3 observability pack with active slice `DD-P3-S1`.
 
 ## Autopilot Transition Contract
 
@@ -29,6 +27,7 @@
 - `execute/completed` -> `review` same slice; execution completion is not terminal.
 - `review/completed` + accepted evidence -> write back `README` / `STATUS` / `WORKSET`, activate the next unchecked stage in `Stage Order`, then route to next `wave_plan` or `execute`.
 - `review/continue` -> keep the same active slice and route to `execute` for residual in-scope work.
+- `closeout/done` for a concrete pack -> if a queued master tracker names the next master writeback, route `master_plan` / `plan-creator` to mark the just-closed master stage done and create or activate the next concrete pack; do not restart the completed pack.
 - `needs_replan` -> `replan` with `plan-creator`.
 - `blocked` / `failed` -> stop and preserve blocker evidence in `STATUS`.
 - `done` is reserved for full objective completion and repo-local closeout prompt surface only.
@@ -55,6 +54,10 @@
 - `docs/plan/data-dyna-testable-runtime-deployment_STATUS.md`
 - `docs/plan/data-dyna-testable-runtime-deployment_WORKSET.md`
 - terminal state: `PACK_COMPLETE`, owner `closeout`, state `DONE`; P1-lite Docker/testable runtime deployment was pushed at commit `6c11098`.
+- `docs/plan/data-dyna-auth-tenancy-foundation_PLAN.md`
+- `docs/plan/data-dyna-auth-tenancy-foundation_STATUS.md`
+- `docs/plan/data-dyna-auth-tenancy-foundation_WORKSET.md`
+- terminal state: `PACK_COMPLETE`, owner `closeout`, state `DONE`; P2-lite auth/tenancy closeout accepted credential, tenancy, idempotency, smoke, and residual evidence.
 - Do not resume completed packs unless a future replan explicitly reopens them.
 
 ## Autopilot Parser Invariants
@@ -78,9 +81,10 @@ These invariants are the source-of-truth guard against the closeout drift that b
 
 - This is the single-root repo-local machine control plane for current `data-dyna` productionization planning.
 - Keep this README, the active `PLAN`, `STATUS`, and `WORKSET` aligned in the same writeback turn.
-- Active-slice phase reports should use `stepId = DD-P2-S1` while this active slice remains current.
-- `data-dyna-auth-tenancy-foundation` is active as the concrete P2-lite pack; `DD-P2-S1` must write the auth/tenancy contract before runtime auth code changes.
-- `data-dyna-production-readiness-master` now tracks the lightweight P2-P6 order and boundary law without over-specifying late-stage implementation details.
+- Active-slice phase reports should use `stepId = DD-P3-S1` while this active slice remains current.
+- `data-dyna-observability-foundation` is the active concrete P3 pack; `DD-P3-S1` starts with a contract/redaction map before runtime observability implementation.
+- `data-dyna-auth-tenancy-foundation` reached `PACK_COMPLETE` after closeout audited the P2 auth/tenancy contract, schema/storage, runtime auth boundary, tenant-safe writes, smoke/runbook, and validation evidence.
+- `data-dyna-production-readiness-master` now marks P2 done and tracks P3 as the active concrete pack while preserving P4/P5/P6 order and boundary law without over-specifying late-stage implementation details.
 - `data-dyna-testable-runtime-deployment` reached `PACK_COMPLETE` after `DD-P1-CLOSEOUT-S1` audited Dockerfile, runtime DB wiring, smoke gate, runbook, validation evidence, and residual handoff.
 - `DD-P1-S4` review accepted the Docker/testable-runtime runbook and preflight evidence and advanced the pack to `DD-P1-CLOSEOUT-S1`.
 - `DD-P1-S3` review accepted the runtime smoke gate evidence and advanced the pack to `DD-P1-S4`.

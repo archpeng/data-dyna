@@ -2,51 +2,32 @@
 
 ## Stage Order
 
-- [ ] `DD-P2-S1` auth/tenancy contract and implementation map
-- [ ] `DD-P2-S2` tenant storage and idempotency safety
-- [ ] `DD-P2-S3` runtime request auth boundary
-- [ ] `DD-P2-S4` tenant-safe event writes and negative tests
-- [ ] `DD-P2-S5` P2 runtime smoke and runbook update
-- [ ] `DD-P2-CLOSEOUT-S1` P2 closeout audit
+- [x] `DD-P2-S1` auth/tenancy contract and implementation map
+- [x] `DD-P2-S2` tenant storage and idempotency safety
+- [x] `DD-P2-S3` runtime request auth boundary
+- [x] `DD-P2-S4` tenant-safe event writes and negative tests
+- [x] `DD-P2-S5` P2 runtime smoke and runbook update
+- [x] `DD-P2-CLOSEOUT-S1` P2 closeout audit
 
 ## Active Stage
 
-### `DD-P2-S1`
+### `PACK_COMPLETE`
 
-- Owner: `execute-plan`
-- State: `READY`
-- Priority: `critical`
+- Owner: `closeout`
+- State: `DONE`
+- Priority: `terminal`
 
 目标：
 
-- Write the P2-lite source-of-truth contract before coding auth behavior, so request identity, tenant identity, schema impact, and test expectations are explicit.
+- close the pack through the repo-local closeout prompt surface
 
 必须交付：
 
-1. `docs/security/auth-tenancy-foundation.md` defining the minimal auth model, accepted credential shape, tenant identity source, request failure behavior, and local/test env variables.
-2. A concrete implementation map naming the exact files/surfaces later P2 slices may change.
-3. Explicit decisions for `merchantId`, `storeId`, `producer.service`, `producer.environment`, `source`, and idempotency scope safety.
-4. Validation ladder for P2 implementation and review.
-
-done_when:
-
-1. `docs/security/auth-tenancy-foundation.md` exists and defines the canonical P2-lite auth/tenancy contract.
-2. The contract explains how missing credentials, invalid credentials, tenant mismatch, missing tenant identity, and idempotency collisions must behave.
-3. The contract names allowed implementation surfaces and preserves P3/P4/P5/P6 residuals.
-4. `npm run check:plan` and `git diff --check` pass.
-
-stop_boundary:
-
-1. Stop if the contract requires full IAM, OAuth, SSO, admin UI, or external secret infrastructure.
-2. Stop if the contract would admit real producer traffic before tenant-safe writes are implemented and tested.
-3. Stop if schema decisions require migration changes not captured for `DD-P2-S2`.
+1. final closeout summary and residual handoff
 
 必须避免：
 
-1. Do not implement runtime auth in this slice unless required to make the contract testable and still bounded.
-2. Do not invent compatibility aliases for multiple credential systems.
-3. Do not hide P3/P4/P5/P6 residuals.
-
+1. dispatching another execute/review phase from terminal parser truth
 ## Slice Ownership
 
 ### `DD-P2-S1`
@@ -129,6 +110,7 @@ stop_boundary:
 | 4 | `DD-P2-S4` | `execute -> review` | activate `DD-P2-S5` |
 | 5 | `DD-P2-S5` | `execute -> review` | activate `DD-P2-CLOSEOUT-S1` |
 | 6 | `DD-P2-CLOSEOUT-S1` | `review -> accepted-writeback` | activate `PACK_COMPLETE` or P3 successor pack |
+| terminal | `PACK_COMPLETE` | `closeout` | repo-local closeout prompt surface |
 
 `currentWave/maxWaves` or any scheduler wave count is not objective-completion proof; only parser truth and accepted review evidence can permit terminal closeout.
 
@@ -179,14 +161,83 @@ Known out-of-scope residuals for this P2 pack:
 - P6: full Agent runtime, real Pi provider integration, provider audit, validator/merchant-review runtime governance.
 - Full IAM/OAuth/SSO/admin UI/self-service merchant permissions.
 - Cloud production secret management and deployment hardening beyond local/test env contract.
+- Master tracker follow-up: mark `DD-PR-MASTER-P2` done and activate `DD-PR-MASTER-P3` after this terminal pack is persisted.
+
+## Latest DD-P2-S3 Execution Evidence
+
+- Added a minimal app-layer bearer-token auth module for ingestion requests.
+- Parsed `DATA_DYNA_INGESTION_CREDENTIALS_JSON` into placeholder-safe local/test credentials and made event routes fail fast when credentials are missing from runtime config.
+- Integrated `/events` and `/events/batch` auth checks before ingestion handlers so missing or invalid credentials return `401`, `WWW-Authenticate: Bearer`, and error code `UNAUTHORIZED` without raw-event persistence.
+- Updated runtime tests to cover missing credentials, invalid credentials, and authorized valid, duplicate, invalid, and batch behavior.
+- Updated the app seam README to reflect P2-lite auth without claiming full IAM/tenancy readiness.
+
+## Latest DD-P2-S3 Review Evidence
+
+- Review compared the accepted P2 auth contract with `src/app/auth/ingestion-auth.ts`, `src/app/config/runtime-config.ts`, `src/app/http/events-route.ts`, runtime server wiring, `.env.example`, and runtime/config tests.
+- Review added missing proof for duplicate `credentialId` startup rejection plus non-Bearer and empty Bearer request rejection without persistence.
+- Review verdict: accepted with successor residuals for tenant mismatch, missing tenant identity, and credential audit context flow in `DD-P2-S4`.
+- Parser truth now activates `DD-P2-S4` for tenant-safe event writes and negative tests.
+
+## Latest DD-P2-S4 Execution Evidence
+
+- Flowed the authenticated ingestion credential into event ingestion without importing app/auth code into deterministic ingestion modules.
+- Enforced P2 tenant policy before accepted persistence: missing merchant/store/environment or non-`store` idempotency scope returns `TENANT_IDENTITY_REQUIRED`, and tenant/producer/source mismatch returns `TENANT_MISMATCH`.
+- Tenant policy failures persist only to `invalid_raw_events` with credential/tenant audit fields and do not create accepted `raw_events` rows.
+- Runtime tests now prove tenant A credentials cannot write tenant B events, missing/malformed tenant identity cannot become accepted, tenant-valid writes persist expected credential/merchant/store/producer identity, cross-tenant same-key valid writes remain separate, and mixed batches accept only tenant-valid items.
+- Parser active stage remains `DD-P2-S4` until same-slice review accepts the execution evidence and activates `DD-P2-S5`.
+
+## Latest DD-P2-S4 Review Evidence
+
+- Review compared the accepted P2 auth/tenancy contract with route auth context flow, tenant policy validation in ingestion handlers, PostgreSQL/in-memory persistence contracts, and runtime negative tests.
+- Review added malformed tenant identity proof: authenticated empty `identity.merchantId` returns `400`, persists invalid audit context, and does not create an accepted `raw_events` row.
+- Review verdict: accepted with successor residuals for P2 authenticated smoke/runbook evidence in `DD-P2-S5`.
+- Parser truth now activates `DD-P2-S5` for runtime smoke and runbook updates.
+
+## Latest DD-P2-S5 Execution Evidence
+
+- Updated `scripts/smoke-runtime.mjs` to require the P2 local/test credential JSON, send authorized event/batch probes, and prove missing and invalid bearer credentials return `401` without raw or invalid persistence.
+- Smoke now proves tenant-scoped accepted writes persist credential/merchant/store/producer identity, duplicates remain idempotent, tenant mismatch persists only invalid audit context, invalid schema payloads keep credential audit context, and batch accepts a valid tenant-scoped item.
+- Updated `docs/deployment/testable-runtime-deployment.md` with the placeholder-only P2 credential env var, Docker runtime env passing, host-side smoke env passing, expected unauthorized/tenant-mismatch probes, and residual production-secret/IAM boundaries.
+- Updated `.env.example` with a placeholder-only P2 credential comment; no real token material was added.
+- Same-slice review accepted this execution evidence and activated `DD-P2-CLOSEOUT-S1` for P2 closeout audit.
+
+## Latest DD-P2-S5 Review Evidence
+
+- Reviewed active docs/plan truth, the P2 auth/tenancy contract, `scripts/smoke-runtime.mjs`, `docs/deployment/testable-runtime-deployment.md`, `.env.example`, route auth/config surfaces, and tenant policy behavior against the S5 deliverables.
+- Review found one smoke proof gap: HTTP smoke asserted unauthorized body/status but not the `WWW-Authenticate: Bearer` header from the P2 contract; fixed in `scripts/smoke-runtime.mjs` and reflected in the runbook smoke checklist.
+- Replayed the Docker smoke path with placeholder-only local/test credentials: `npm run db:test:up`, `npm run test:db:migrations`, `npm run docker:build`, Docker runtime start, and `npm run smoke:runtime` passed.
+- Replayed deterministic gates after the review fix: `node --check scripts/smoke-runtime.mjs`, `npm run test:runtime`, `npm run check:boundaries`, `npm run check:schema-migrations`, `npm run typecheck`, `npm test`, `npm run check:plan`, and `git diff --check` passed.
+- No real secret management, cloud infrastructure, P3 observability, P4 producer adapter, P5 worker, or P6 Agent runtime work was introduced.
+- Review verdict: accepted with residuals for P2 closeout audit and P3/P4/P5/P6 successor work.
+
+## Accepted Review Evidence for `DD-P2-CLOSEOUT-S1`
+
+- Audited `DD-P2-S1` through `DD-P2-S5` across the P2 auth/tenancy contract, raw-event tenancy migration, PostgreSQL and in-memory raw-event storage, runtime bearer-token auth, tenant-safe ingestion policy, cross-tenant negative tests, authenticated Docker smoke, runbook, and placeholder env contract.
+- Verified accepted P2 evidence covers missing/invalid credentials returning `401` / `UNAUTHORIZED` / `WWW-Authenticate: Bearer` without persistence; missing tenant identity returning `TENANT_IDENTITY_REQUIRED`; tenant mismatch returning `TENANT_MISMATCH` with invalid-event audit context only; tenant-scoped idempotency key reuse across tenants; and accepted writes persisting credential/merchant/store/producer identity.
+- Replayed closeout validation: contract marker scan, deterministic Core boundary scan, `npm run db:test:up`, `npm run test:db:migrations`, `npm run test:app:repository`, `npm run test:runtime`, `npm run docker:build`, Docker runtime start, `npm run smoke:runtime`, `npm run check:boundaries`, `npm run check:schema-migrations`, `npm run typecheck`, `npm test`, `npm run check:plan`, and `git diff --check` passed.
+- Preserved residuals for P3 observability/redaction, P4 producer integration, P5 durable workers, P6 Agent runtime, full IAM/OAuth/SSO/admin UI, production secret management, and cloud deployment hardening.
+- Recommended master tracker writeback after this terminal pack is persisted: mark `DD-PR-MASTER-P2` done and activate `DD-PR-MASTER-P3` for an observability foundation pack before real producer traffic expansion.
+- Terminal writeback marked all P2 stages done and this pack `PACK_COMPLETE` only after accepted review evidence and validation passed.
 
 ## Machine Queue
 
-- active_step: `DD-P2-S1`
-- latest_completed_step: `data-dyna-testable-runtime-deployment PACK_COMPLETE`
-- intended_handoff: `execute-plan`
-- latest_plan_summary: Created P2-lite auth/tenancy foundation pack and activated DD-P2-S1.
+- active_step: `PACK_COMPLETE`
+- latest_completed_step: `PACK_COMPLETE`
+- intended_handoff: `autopilot-closeout`
+- latest_closeout_summary: Closed data-dyna-auth-tenancy-foundation at PACK_COMPLETE.
 - latest_verification:
-  - `P1-lite testable runtime deployment is PACK_COMPLETE and pushed at commit 6c11098.`
-  - `P2-P6 master tracker exists as docs/plan/data-dyna-production-readiness-master_*.md.`
-  - `DD-P2-S1 is ready to execute as a contract-first slice before auth code changes.`
+  - `plan_sync /home/peng/dt-git/github/data-dyna/docs/plan reports auth-tenancy STATUS done=6 pending=0 and WORKSET done=6 pending=0.`
+  - `npm run check:plan passed: README plus 7 workset pack(s).`
+  - `git diff --check passed.`
+  - `workspace_scan confirms data-dyna@main is ahead 1 with 21 changed files; no additional closeout edits were required in this phase.`
+  - `Accepted closeout review evidence covered db migrations, repository/runtime tests, Docker build/start, authenticated smoke, boundary/schema/type/test gates, and P2 residual handoff.`
+  - `docs/plan/README.md`
+  - `docs/plan/data-dyna-auth-tenancy-foundation_PLAN.md`
+  - `docs/plan/data-dyna-auth-tenancy-foundation_STATUS.md`
+  - `docs/plan/data-dyna-auth-tenancy-foundation_WORKSET.md`
+  - `docs/security/auth-tenancy-foundation.md`
+  - `migrations/0008_raw_event_tenancy.sql`
+  - `src/app/auth/ingestion-auth.ts`
+  - `scripts/smoke-runtime.mjs`
+  - `docs/deployment/testable-runtime-deployment.md`
+- terminal: `true`

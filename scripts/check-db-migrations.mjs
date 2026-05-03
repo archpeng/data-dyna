@@ -156,6 +156,22 @@ async function expectCheckViolation(client, label, sql, values = []) {
   console.log(`Verified CHECK constraint: ${label} (${violation.constraint ?? violation.message})`);
 }
 
+async function expectUniqueViolation(client, label, sql, values = []) {
+  let violation;
+  await client.query('BEGIN');
+  try {
+    await client.query(sql, values);
+  } catch (error) {
+    violation = error;
+  } finally {
+    await client.query('ROLLBACK').catch(() => undefined);
+  }
+
+  assert.ok(violation, `${label}: expected PostgreSQL to reject the duplicate insert.`);
+  assert.equal(violation.code, '23505', `${label}: expected UNIQUE violation, got ${violation.code}.`);
+  console.log(`Verified UNIQUE constraint: ${label} (${violation.constraint ?? violation.message})`);
+}
+
 async function assertTablesExist(client) {
   const { rows } = await client.query(
     `SELECT table_name
@@ -168,6 +184,135 @@ async function assertTablesExist(client) {
 
   assert.deepEqual(missing, [], `Missing migrated tables: ${missing.join(', ')}`);
   console.log(`Verified migrated table catalog: ${expectedTables.length} expected tables exist.`);
+}
+
+async function assertRawEventTenancyContract(client) {
+  const expectedRawEventColumns = [
+    'credential_id',
+    'idempotency_scope',
+    'merchant_id',
+    'producer_environment',
+  ];
+  const expectedInvalidColumns = [
+    'credential_id',
+    'merchant_id',
+    'producer_environment',
+    'producer_service',
+    'reason_code',
+    'source',
+    'store_id',
+  ];
+  const { rows: rawEventColumns } = await client.query(
+    `SELECT column_name
+       FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'raw_events'
+        AND column_name = ANY($1::text[])
+      ORDER BY column_name`,
+    [expectedRawEventColumns],
+  );
+  const { rows: invalidColumns } = await client.query(
+    `SELECT column_name
+       FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'invalid_raw_events'
+        AND column_name = ANY($1::text[])
+      ORDER BY column_name`,
+    [expectedInvalidColumns],
+  );
+  assert.deepEqual(
+    rawEventColumns.map((row) => row.column_name),
+    expectedRawEventColumns,
+    'raw_events tenant/audit columns should exist',
+  );
+  assert.deepEqual(
+    invalidColumns.map((row) => row.column_name),
+    expectedInvalidColumns,
+    'invalid_raw_events tenant/audit columns should exist',
+  );
+
+  const rawInsert = `INSERT INTO raw_events (
+     event_id,
+     idempotency_key,
+     idempotency_scope,
+     contract_version,
+     source,
+     domain,
+     name,
+     occurred_at,
+     producer_service,
+     producer_environment,
+     credential_id,
+     brand_id,
+     merchant_id,
+     store_id,
+     entity_type,
+     entity_id,
+     properties,
+     event
+   ) VALUES (
+     $1,
+     'idempotency:db-migration-check:shared',
+     'store',
+     'event-contract.v1',
+     'pos',
+     'transaction_scene',
+     'pos.order_paid',
+     '2026-05-03T00:00:00.000Z',
+     'pos-lite-cashier',
+     'test',
+     $2,
+     'brand:db-migration-check',
+     $3,
+     $4,
+     'order',
+     $5,
+     $6::jsonb,
+     $7::jsonb
+   )`;
+
+  await client.query(rawInsert, [
+    'raw-event:db-migration-check:tenant-a',
+    'credential:db-migration-check:tenant-a',
+    'merchant:db-migration-check:tenant-a',
+    'store:db-migration-check:tenant-a',
+    'order:db-migration-check:tenant-a',
+    JSON.stringify({ amount: 42.5 }),
+    JSON.stringify({ fixture: 'tenant-a' }),
+  ]);
+  await client.query(rawInsert, [
+    'raw-event:db-migration-check:tenant-b',
+    'credential:db-migration-check:tenant-b',
+    'merchant:db-migration-check:tenant-b',
+    'store:db-migration-check:tenant-b',
+    'order:db-migration-check:tenant-b',
+    JSON.stringify({ amount: 12.5 }),
+    JSON.stringify({ fixture: 'tenant-b' }),
+  ]);
+
+  const { rows: crossTenantRows } = await client.query(
+    `SELECT COUNT(*)::int AS count
+       FROM raw_events
+      WHERE idempotency_key = 'idempotency:db-migration-check:shared'`,
+  );
+  assert.equal(crossTenantRows[0].count, 2);
+
+  await expectUniqueViolation(
+    client,
+    'raw_events tenant-scoped idempotency identity',
+    rawInsert,
+    [
+      'raw-event:db-migration-check:tenant-a-duplicate',
+      'credential:db-migration-check:tenant-a',
+      'merchant:db-migration-check:tenant-a',
+      'store:db-migration-check:tenant-a',
+      'order:db-migration-check:tenant-a-duplicate',
+      JSON.stringify({ amount: 43.5 }),
+      JSON.stringify({ fixture: 'tenant-a-duplicate' }),
+    ],
+  );
+
+  console.log('Verified raw event tenant/idempotency migration contract.');
 }
 
 async function assertBusinessMutationConstraint(client) {
@@ -566,6 +711,7 @@ async function main() {
 
   await withClient(url, 'data-dyna-db-migration-check-assertions', async (client) => {
     await assertTablesExist(client);
+    await assertRawEventTenancyContract(client);
     await assertBusinessMutationConstraint(client);
     await assertEvidenceClaimsConstraint(client);
     await assertFinalFactSourceConstraint(client);

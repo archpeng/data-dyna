@@ -4,22 +4,27 @@
 
 This lightweight master pack preserves the P2-P6 production-readiness sequence without over-specifying late-stage implementation details before earlier gates produce evidence.
 
-It is a roadmap tracker under the single repo-local `docs/plan/*` control plane. It does not replace the active concrete execution pack. The active concrete pack is `data-dyna-auth-tenancy-foundation`.
+It is a roadmap tracker under the single repo-local `docs/plan/*` control plane. It does not replace the active concrete execution pack. The active concrete pack is `data-dyna-observability-foundation`.
 
 ## Source Truth
 
 - `docs/roadmap/data-dyna-production-readiness-roadmap.md`
 - `docs/plan/data-dyna-testable-runtime-deployment_STATUS.md`
 - `docs/plan/data-dyna-testable-runtime-deployment_WORKSET.md`
+- `docs/plan/data-dyna-auth-tenancy-foundation_STATUS.md`
+- `docs/plan/data-dyna-auth-tenancy-foundation_WORKSET.md`
 - P1 closeout evidence from commit `6c11098 chore: add testable runtime deployment`
+- P2 closeout evidence from `data-dyna-auth-tenancy-foundation` `PACK_COMPLETE`
 
 ## Current Baseline
 
 P1-lite is complete: Dockerfile-based local/test runtime, canonical `DATA_DYNA_DATABASE_URL`, PostgreSQL-backed Fastify startup, runtime smoke gate, and Docker/testable-runtime runbook.
 
+P2-lite is complete: Bearer-token ingestion auth, tenant-safe event writes, tenant-scoped idempotency, negative cross-tenant tests, placeholder-only smoke/runbook, and residual handoff.
+
 Remaining production-readiness work must keep these boundaries explicit:
 
-- P2 before real producer traffic: auth/tenancy and tenant-safe event writes.
+- P2 before real producer traffic: complete; do not reopen unless future regression evidence appears.
 - P3 before wider runtime expansion: structured logs, metrics, traces, alerts, dashboard/query notes, and redaction rules.
 - P4 after P2/P3: real POS, miniapp, mobile-hq, or backend producer integration.
 - P5 after real event flow exists: durable worker queue, retries, checkpoints, dead letters, and idempotent background processing.
@@ -31,7 +36,7 @@ Remaining production-readiness work must keep these boundaries explicit:
 #### `DD-PR-MASTER-P2` — activate and close P2-lite auth/tenancy foundation
 
 - Owner: `plan-creator`
-- State: `READY`
+- State: `DONE`
 - Priority: `critical`
 
 目标：
@@ -64,16 +69,16 @@ stop_boundary:
 #### `DD-PR-MASTER-P3` — create observability foundation pack after P2
 
 - Owner: `plan-creator`
-- State: `QUEUED`
+- State: `READY`
 - Priority: `high`
 
 目标：
 
-- Convert the P3 roadmap into the next concrete pack only after P2 closeout clarifies tenant identity, request identity, and redaction constraints.
+- Keep the master tracker aligned while the concrete `data-dyna-observability-foundation` pack implements the P3 observability gate after P2 clarified tenant identity, request identity, and redaction constraints.
 
 交付物：
 
-1. Concrete P3 pack with bounded slices for structured logging, metrics, trace/correlation, alert/query notes, and redaction tests.
+1. Concrete P3 pack exists with bounded slices for structured logging, metrics, trace/correlation, alert/query notes, and redaction tests.
 2. P3 pack names exact validation commands and avoids broad incident-management scope.
 3. P4 producer integration remains queued until P3 evidence is accepted or explicitly risk-accepted.
 
@@ -229,6 +234,7 @@ stop_boundary:
 ## Master Handoff Law
 
 - The master tracker is updated by `plan-creator` after each concrete pack closeout.
+- Concrete pack `closeout/done` should route the next `master_plan` turn here, not restart the completed concrete pack.
 - The currently active concrete pack owns implementation and review.
 - Late-stage details should be refined only when predecessor evidence exists.
 - `PACK_COMPLETE` for the master is illegal until all non-deferred P2-P6 master stages are done.

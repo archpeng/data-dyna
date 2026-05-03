@@ -1,7 +1,7 @@
 import Fastify, { type FastifyInstance, type FastifyServerOptions } from "fastify";
 import type { AsyncPostHogSink } from "../ingestion/posthog-sink.ts";
 import type { RawEventStore } from "../ingestion/raw-event-store.ts";
-import type { RuntimeConfig } from "./config/runtime-config.ts";
+import { requireIngestionCredentials, type RuntimeConfig } from "./config/runtime-config.ts";
 import { registerEventsRoutes } from "./http/events-route.ts";
 
 export type DataDynaAppOptions = {
@@ -24,6 +24,7 @@ export function buildDataDynaApp(options: DataDynaAppOptions): FastifyInstance {
     app.register(registerEventsRoutes, {
       store: options.rawEventStore,
       postHogSink: options.postHogSink,
+      ingestionCredentials: requireIngestionCredentials(options.config),
     });
   }
 

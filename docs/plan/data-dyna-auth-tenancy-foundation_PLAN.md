@@ -247,6 +247,39 @@ stop_boundary:
 1. Do not terminalize the pack before auth/tenancy negative evidence is accepted.
 2. Do not hide production secret-management or IAM residuals.
 
+#### `PACK_COMPLETE` — terminal parser state
+
+- Owner: `closeout`
+- State: `DONE`
+- Priority: `terminal`
+
+目标：
+
+- Represent P2 auth/tenancy foundation completion only after all non-deferred P2 slices have accepted review evidence.
+
+交付物：
+
+1. README `Current Active Slice` is `PACK_COMPLETE` for this pack.
+2. WORKSET `Active Stage` is `PACK_COMPLETE` with owner `closeout` and state `DONE`.
+3. Residual handoff preserves P3/P4/P5/P6, full IAM, cloud secret management, and production deployment hardening as successor work.
+
+done_when:
+
+1. All non-deferred P2 stages have accepted review evidence or explicit residuals.
+2. README/PLAN/STATUS/WORKSET parse as terminal `PACK_COMPLETE` truth.
+3. Repo-local closeout has preserved validation evidence and residual handoff.
+
+stop_boundary:
+
+1. Stop if any previous P2 stage lacks accepted review evidence.
+2. Stop if terminal state would hide P3/P4/P5/P6 or production secret-management residuals.
+3. Stop if parser truth still names any active slice other than `PACK_COMPLETE`.
+
+必须避免：
+
+1. Do not use wave count as completion proof.
+2. Do not mark complete before closeout audit acceptance.
+
 ## Continuous Wave Ladder
 
 | Order | Slice | Phase loop | Accepted-review next step |
@@ -257,6 +290,7 @@ stop_boundary:
 | 4 | `DD-P2-S4` | `execute -> review` | activate `DD-P2-S5` |
 | 5 | `DD-P2-S5` | `execute -> review` | activate `DD-P2-CLOSEOUT-S1` |
 | 6 | `DD-P2-CLOSEOUT-S1` | `review -> accepted-writeback` | activate `PACK_COMPLETE` or P3 successor pack |
+| terminal | `PACK_COMPLETE` | `closeout` | repo-local closeout prompt surface |
 
 ## Autopilot Transition Contract
 

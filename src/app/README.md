@@ -1,10 +1,10 @@
 # App Adapter Seam
 
-This directory is the production-adapter seam. It now contains the minimal Fastify app/config/server skeleton, PostgreSQL raw-event repository, `/events` HTTP adapter routes, and contract-only worker foundation seams, but it still does not implement production queue workers, auth/tenancy, deployment, or an observability stack.
+This directory is the production-adapter seam. It now contains the minimal Fastify app/config/server skeleton, P2-lite bearer-token ingestion auth boundary, PostgreSQL raw-event repository, `/events` HTTP adapter routes, and contract-only worker foundation seams, but it still does not implement production queue workers, full IAM/tenancy, deployment, or an observability stack.
 
 ## Current runtime foundation decision
 
-`docs/runtime-foundation-decision.md` records the current adapter decisions: Fastify for HTTP, `pg` / node-postgres for PostgreSQL raw-event repositories, and simple script/runner worker entrypoints that may be invoked by cron or an external scheduler. The current app uses Fastify for construction, `/healthz`, `/events`, and `/events/batch`; the current repository seam uses `pg` only under `src/app`; the current worker foundation is contract-only under `src/app/workers`; none of these surfaces claim production deployment, Agent runtime, auth, tenancy, queue reliability, or observability readiness.
+`docs/runtime-foundation-decision.md` records the current adapter decisions: Fastify for HTTP, `pg` / node-postgres for PostgreSQL raw-event repositories, and simple script/runner worker entrypoints that may be invoked by cron or an external scheduler. The current app uses Fastify for construction, `/healthz`, `/events`, and `/events/batch`; the current repository seam uses `pg` only under `src/app`; the current worker foundation is contract-only under `src/app/workers`; none of these surfaces claim production deployment, Agent runtime, full IAM/tenancy, queue reliability, or observability readiness.
 
 ## Adapter surfaces
 
@@ -13,6 +13,7 @@ Implemented S2/S3/S4/S5 surfaces:
 ```text
 src/app/config/runtime-config.ts
 src/app/config/postgres-test-config.ts
+src/app/auth/ingestion-auth.ts
 src/app/app.ts
 src/app/server.ts
 src/app/repositories/postgres-raw-event-repository.ts
