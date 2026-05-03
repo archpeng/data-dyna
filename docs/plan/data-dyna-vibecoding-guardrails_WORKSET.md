@@ -2,52 +2,33 @@
 
 ## Stage Order
 
-- [ ] `DD-VIBE-S1` architecture boundary checker
-- [ ] `DD-VIBE-S2` split validation scripts
-- [ ] `DD-VIBE-S3` human-critical ownership policy
-- [ ] `DD-VIBE-S4` module README contracts
-- [ ] `DD-VIBE-S5` schema and migration safety checker
-- [ ] `DD-VIBE-S6` service and worker adapter seam contract
-- [ ] `DD-VIBE-CLOSEOUT-S1` guardrail audit and handoff
+- [x] `DD-VIBE-S1` architecture boundary checker
+- [x] `DD-VIBE-S2` split validation scripts
+- [x] `DD-VIBE-S3` human-critical ownership policy
+- [x] `DD-VIBE-S4` module README contracts
+- [x] `DD-VIBE-S5` schema and migration safety checker
+- [x] `DD-VIBE-S6` service and worker adapter seam contract
+- [x] `DD-VIBE-CLOSEOUT-S1` guardrail audit and handoff
 
 ## Active Stage
 
-### `DD-VIBE-S1`
+### `PACK_COMPLETE`
 
-- Owner: `execute-plan`
-- State: `READY`
-- Priority: `highest`
+- Owner: `closeout`
+- State: `DONE`
+- Priority: `terminal`
 
 目标：
 
-- Add an executable boundary check that prevents AI or human edits from introducing forbidden imports across the current module planes.
+- close the pack through the repo-local closeout prompt surface
 
 必须交付：
 
-1. `scripts/check-boundaries.mjs` or equivalent lightweight Node script.
-2. `package.json` script `check:boundaries`.
-3. Test/probe coverage proving the current tree passes and the checker encodes section 8.1 forbidden dependency rules.
-4. Short documentation pointer from the architecture/vibe-coding doc or module policy docs to the command.
-
-done_when:
-
-1. `npm run check:boundaries` exists and passes on the current repository.
-2. The checker covers at least these rules: `contracts` imports no project business modules; `ingestion` imports no snapshots/benchmarks/agent/merchant-review/evidence; `projections` imports no snapshots/benchmarks/agent/merchant-review/evidence; `snapshots` imports no agent/merchant-review/evidence; `benchmarks` imports no agent/merchant-review/evidence; `agent` does not import ingestion stores or projection rebuild internals except explicitly allowed type/schema seams; `evidence` does not import agent sidecar runtime.
-3. The checker emits actionable file-level violations rather than vague failure text.
-4. `git diff --check`, `npm run check:boundaries`, and `npm run typecheck` pass.
-
-stop_boundary:
-
-1. Stop and replan if satisfying a boundary rule requires moving production code across modules instead of adding a checker.
-2. Stop if a rule would incorrectly ban an existing intentional deterministic contract seam and cannot be expressed as a narrow allowlist.
-3. Stop before adding heavy lint/dependency frameworks unless the lightweight script cannot prove the required boundaries.
+1. final closeout summary and residual handoff
 
 必须避免：
 
-1. Do not rewrite module imports only to satisfy a poorly scoped checker.
-2. Do not add broad allowlists that make the checker decorative.
-3. Do not combine this slice with test-script splitting or CODEOWNERS work.
-
+1. dispatching another execute/review phase from terminal parser truth
 ## Slice Ownership
 
 ### `DD-VIBE-S1`
@@ -145,17 +126,17 @@ stop_boundary:
 | 4 | `DD-VIBE-S4` | `execute -> review` | activate `DD-VIBE-S5` |
 | 5 | `DD-VIBE-S5` | `execute -> review` | activate `DD-VIBE-S6` |
 | 6 | `DD-VIBE-S6` | `execute -> review` | activate `DD-VIBE-CLOSEOUT-S1` |
-| 7 | `DD-VIBE-CLOSEOUT-S1` | `review -> accepted-writeback` | activate `VIBE_PACK_COMPLETE` only if guardrails are audited |
-| terminal | `VIBE_PACK_COMPLETE` | `closeout` | repo-local closeout prompt surface |
+| 7 | `DD-VIBE-CLOSEOUT-S1` | `review -> accepted-writeback` | activate `PACK_COMPLETE` only if guardrails are audited |
+| terminal | `PACK_COMPLETE` | `closeout` | repo-local closeout prompt surface |
 
-`currentWave/maxWaves` or any scheduler wave count is not objective-completion proof; only parser truth `VIBE_PACK_COMPLETE` can permit closeout.
+`currentWave/maxWaves` or any scheduler wave count is not objective-completion proof; only parser truth `PACK_COMPLETE` can permit closeout.
 
 ## Hard Closeout Guard
 
 Closeout is forbidden unless this WORKSET and `docs/plan/README.md` parse as:
 
 ```text
-Active Stage: VIBE_PACK_COMPLETE
+Active Stage: PACK_COMPLETE
 Owner: closeout
 State: DONE
 Remaining non-deferred stages: none
@@ -206,7 +187,20 @@ Known out-of-scope residuals for this pack:
 
 ## Machine Queue
 
-- active_step: `DD-VIBE-S1`
-- latest_completed_step: `none`
-- intended_handoff: `execute-plan`
-- terminal: `false`
+- active_step: `PACK_COMPLETE`
+- latest_completed_step: `DD-VIBE-CLOSEOUT-S1`
+- intended_handoff: `autopilot-closeout`
+- latest_closeout_summary: Accepted guardrail closeout audit and terminalized PACK_COMPLETE.
+- latest_verification:
+  - `Guardrail artifact audit passed for package scripts, scripts/check-boundaries.mjs, scripts/check-schema-migration-safety.mjs, docs/human-critical-review-policy.md, module READMEs, and src/app/README.md.`
+  - `src/app contains only README.md; runtime dependency audit found no web, DB, queue, or observability dependencies.`
+  - `npm run check:boundaries and npm run check:schema-migrations passed.`
+  - `npm run test:contracts, npm run test:core, npm run test:agent, npm run test:review, npm run test:evidence, npm test, and npm run typecheck passed.`
+  - `git diff --check passed.`
+  - `Terminal parser consistency passed with active slice PACK_COMPLETE owner/state closeout/DONE.`
+  - `plan_sync /home/peng/dt-git/github/data-dyna/docs/plan reports guardrails STATUS/WORKSET 7 done / 0 pending.`
+  - `docs/plan/README.md`
+  - `docs/plan/data-dyna-vibecoding-guardrails_STATUS.md`
+  - `docs/plan/data-dyna-vibecoding-guardrails_WORKSET.md`
+  - `docs/current-architecture-and-vibecoding-review.md`
+- terminal: `true`

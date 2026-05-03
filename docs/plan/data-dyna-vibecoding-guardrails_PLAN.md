@@ -77,7 +77,7 @@ DD-VIBE-S1 architecture boundary checker
   -> DD-VIBE-S5 schema/migration safety checker
   -> DD-VIBE-S6 app/worker adapter seam contract
   -> DD-VIBE-CLOSEOUT-S1 guardrail audit and handoff
-  -> VIBE_PACK_COMPLETE terminal parser state only after accepted closeout
+  -> PACK_COMPLETE terminal parser state only after accepted closeout
 ```
 
 Accepted review of each stage activates the next stage in this order. Do not jump over intermediate slices. `currentWave/maxWaves` or any human wave count is not completion evidence.
@@ -314,7 +314,7 @@ stop_boundary:
 1. Reality audit over boundary checker, split scripts, ownership policy, module READMEs, schema/migration checker, and adapter seam.
 2. Updated `docs/current-architecture-and-vibecoding-review.md` and plan status if recommendations moved from future to implemented.
 3. Residual list for CI integration, production API/worker implementation, real DB migration check, and real Pi runtime.
-4. Terminal writeback to `VIBE_PACK_COMPLETE` only after accepted evidence.
+4. Terminal writeback to `PACK_COMPLETE` only after accepted evidence.
 
 done_when:
 
@@ -327,7 +327,7 @@ stop_boundary:
 
 1. Stop if any accepted guardrail slice lacks proof and cannot be audited.
 2. Stop if production implementation starts during closeout.
-3. Stop if parser truth still names any active slice other than `VIBE_PACK_COMPLETE` after closeout writeback.
+3. Stop if parser truth still names any active slice other than `PACK_COMPLETE` after closeout writeback.
 
 必须避免：
 
@@ -335,7 +335,7 @@ stop_boundary:
 2. Do not create a second control-plane root.
 3. Do not claim production readiness.
 
-#### `VIBE_PACK_COMPLETE` — terminal parser state
+#### `PACK_COMPLETE` — terminal parser state
 
 - Owner: `closeout`
 - State: `DONE`
@@ -347,26 +347,26 @@ stop_boundary:
 
 交付物：
 
-1. README `Current Active Slice` is `VIBE_PACK_COMPLETE`.
-2. WORKSET `Active Stage` is `VIBE_PACK_COMPLETE` with owner `closeout` and state `DONE`.
+1. README `Current Active Slice` is `PACK_COMPLETE`.
+2. WORKSET `Active Stage` is `PACK_COMPLETE` with owner `closeout` and state `DONE`.
 3. No non-deferred guardrail stage remains unchecked or unaudited.
 
 done_when:
 
 1. All non-deferred stages have accepted review evidence or explicit deferred residuals.
-2. README/PLAN/STATUS/WORKSET parse as terminal `VIBE_PACK_COMPLETE` truth.
+2. README/PLAN/STATUS/WORKSET parse as terminal `PACK_COMPLETE` truth.
 3. Repo-local closeout has preserved validation evidence and residual handoff.
 
 stop_boundary:
 
 1. Stop if any previous stage lacks accepted review evidence.
 2. Stop if terminal state would hide production, runtime, or external integration residuals.
-3. Stop if parser truth still names any active slice other than `VIBE_PACK_COMPLETE`.
+3. Stop if parser truth still names any active slice other than `PACK_COMPLETE`.
 
 必须避免：
 
 1. Do not use wave count, cycle count, or scheduler route as completion proof.
-2. Do not mark `VIBE_PACK_COMPLETE` before closeout audit acceptance.
+2. Do not mark `PACK_COMPLETE` before closeout audit acceptance.
 
 ## Exit Criteria
 

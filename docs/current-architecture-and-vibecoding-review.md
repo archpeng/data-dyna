@@ -655,7 +655,7 @@ DD-P5-S1 -> tests/evidence-dd-p5-s1.spec.ts
 
 ## 8. Vibe Coding 适配性改进建议
 
-这些建议不是当前已实现成果，而是下一计划可选改进项。
+这些建议已由 `data-dyna-vibecoding-guardrails` 计划包转化为本地 guardrails；未实现生产 runtime、真实 DB 执行、真实 Agent runtime 或外部 producer 集成的部分仍明确标为 residual / future plan。
 
 ### 8.1 增加架构边界检查
 
@@ -677,9 +677,11 @@ src/evidence 不得 import agent sidecar runtime，只能 import experiment plan
 npm run check:boundaries
 ```
 
+当前 guardrail 入口：`scripts/check-boundaries.mjs` 编码上述 import 边界，AI coder 修改 `src/*` import 后必须运行 `npm run check:boundaries`。
+
 ### 8.2 拆分测试脚本
 
-当前 `npm test` 串联所有 spec。建议保留总入口，同时增加：
+当前 `npm test` 仍串联所有 spec 作为完整回归入口；已增加以下模块级最小验证入口：
 
 ```json
 {
@@ -693,7 +695,7 @@ npm run check:boundaries
 }
 ```
 
-AI coder 可以按模块跑最小验证，减少无关反馈。
+AI coder 可以按模块跑最小验证，减少无关反馈；合并前仍运行 `npm test` 保留全量覆盖。
 
 ### 8.3 给高风险目录加 CODEOWNERS 或 review policy
 
@@ -708,6 +710,8 @@ migrations/**
 ```
 
 理由：这些地方涉及状态机、安全闸门、证据口径和数据库合同。
+
+当前 repo 未发现已验证 owner handle 或既有 CODEOWNERS 约定，因此本轮使用 `docs/human-critical-review-policy.md` 作为 human-critical review source of truth；AI coder 修改上述路径前必须先读取该 policy。
 
 ### 8.4 给每个模块补短 README
 
@@ -724,18 +728,26 @@ Validation:
 
 这比长文更适合 AI coder 快速遵循。
 
+当前约定已落到各模块 `src/*/README.md`：AI coder 修改模块前先读对应 README，并按其中 `Validation` 执行最小验证。
+
 ### 8.5 增加 schema / migration 一致性检查
 
-当前 SQL 与 Zod schema 分别存在。下一步建议至少做轻量检查：
+当前已增加轻量本地检查：`npm run check:schema-migrations`。
 
-- migration 文件包含关键 enum/check；
-- schema contract version 与 migration check 一致；
+该检查保护：
+
+- migration 文件保留关键 enum/check；
+- schema contract version 与 migration check 保持一致；
 - required fields 在 SQL 中存在；
-- `llm_generated_claims = []`、`business_mutation_called = false` 等关键安全约束不能被删除。
+- `llm_generated_claims = []`、`business_mutation_called = false`、`final_fact_source = 'pos'`、`source_table = 'report.crm.member_labels'`、aggregate-only de-identification 和 `min_peer_store_count >= 3` 等关键安全约束不能被删除。
+
+它是 schema/migration safety smoke check，不替代真实数据库迁移执行、SQL engine validation 或 DB integration tests。
 
 ### 8.6 生产化前增加 service/worker adapter 层
 
-建议保持现有纯函数不变，在外层新增：
+当前 seam contract 已落到 `src/app/README.md`。它只定义未来生产 adapter 放置位置和边界，不实现可运行 HTTP server、PostgreSQL repository、queue worker、runtime config 或 observability stack。
+
+未来生产计划应在外层新增：
 
 ```text
 src/app/http/events-route.ts
@@ -748,9 +760,10 @@ src/app/workers/evidence-worker.ts
 
 原则：
 
-- adapter 负责 I/O、事务、重试、日志；
+- adapter 负责 I/O、事务、重试、日志、调度和 repository 调用；
 - core module 继续保持 deterministic pure functions；
-- 不把 DB client 直接塞进业务计算函数。
+- 不把 DB client、HTTP framework object、queue client 或 runtime config 塞进当前 deterministic modules；
+- 不声明生产 runtime 已完成，真实 API/worker/DB ownership 和 integration tests 仍需独立 production plan。
 
 ---
 
@@ -794,12 +807,13 @@ AI coder 不得在没有新计划和人类确认的情况下：
 | 修改类型 | 最小验证 |
 |---|---|
 | docs only | `git diff --check` |
-| event contract | `npm test -- tests/event-contract.spec.ts` 若未拆脚本则 `npm test`; `npm run typecheck` |
-| ingestion | `npm test`; `npm run typecheck` |
-| projections/snapshots/benchmarks | `npm test`; `npm run typecheck`; inspect affected docs |
-| agent/validator/tools | `npm test`; `npm run typecheck`; confirm no mutation tools |
-| merchant-review/evidence | `npm test`; `npm run typecheck`; manually inspect lifecycle/verdict safety |
-| migrations | `git diff --check`; SQL review; future `db:migrate:check` |
+| event contract | `npm run test:contracts`; `npm run typecheck` |
+| ingestion | `npm run test:core`; `npm run typecheck` |
+| projections/snapshots/benchmarks | `npm run test:core`; `npm run typecheck`; inspect affected docs |
+| agent/validator/tools | `npm run test:agent`; `npm run typecheck`; confirm no mutation tools |
+| merchant-review | `npm run test:review`; `npm run typecheck`; manually inspect lifecycle safety |
+| evidence | `npm run test:evidence`; `npm run typecheck`; manually inspect verdict/evidence safety |
+| migrations | `npm run check:schema-migrations`; `git diff --check`; SQL review; DB migration execution remains future production validation |
 
 ---
 

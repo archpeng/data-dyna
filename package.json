@@ -6,6 +6,13 @@
   "description": "Deterministic Data Core and Evidence Service foundation for independent cafés.",
   "scripts": {
     "test": "tsx tests/event-contract.spec.ts && tsx tests/ingestion-handlers.spec.ts && tsx tests/projections-dd-p1-s1.spec.ts && tsx tests/snapshots-dd-p1-s2.spec.ts && tsx tests/benchmarks-dd-p2-s1.spec.ts && tsx tests/agent-dd-p3-s1.spec.ts && tsx tests/agent-dd-p3-s2.spec.ts && tsx tests/merchant-review-dd-p4-s1.spec.ts && tsx tests/evidence-dd-p5-s1.spec.ts",
+    "test:contracts": "tsx tests/event-contract.spec.ts",
+    "test:core": "tsx tests/ingestion-handlers.spec.ts && tsx tests/projections-dd-p1-s1.spec.ts && tsx tests/snapshots-dd-p1-s2.spec.ts && tsx tests/benchmarks-dd-p2-s1.spec.ts",
+    "test:agent": "tsx tests/agent-dd-p3-s1.spec.ts && tsx tests/agent-dd-p3-s2.spec.ts",
+    "test:review": "tsx tests/merchant-review-dd-p4-s1.spec.ts",
+    "test:evidence": "tsx tests/evidence-dd-p5-s1.spec.ts",
+    "check:boundaries": "node scripts/check-boundaries.mjs",
+    "check:schema-migrations": "node scripts/check-schema-migration-safety.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
