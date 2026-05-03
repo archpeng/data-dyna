@@ -54,27 +54,25 @@
 ## Machine State
 
 - active_step: `PACK_COMPLETE`
-- latest_completed_step: `DD-P1-CLOSEOUT-S1`
+- latest_completed_step: `PACK_COMPLETE`
 - intended_handoff: `autopilot-closeout`
-- latest_closeout_summary: Closed data-dyna-testable-runtime-deployment at PACK_COMPLETE.
+- latest_closeout_summary: Closed and pushed P1 testable runtime deployment.
 - latest_verification:
-  - `Closeout audited accepted DD-P1-S1 through DD-P1-S4 evidence across Dockerfile, .dockerignore, package scripts, runtime config, runtime server, smoke gate, tests, runbook, and residual handoff.`
-  - `Closeout validation passed: npm run db:test:up; npm run test:db:migrations; npm run test:app:repository; npm run docker:build; docker run data-dyna:testable-runtime on 127.0.0.1:13009; health wait probe; npm run smoke:runtime; npm run test:runtime; npm run test:app:workers; npm run check:boundaries; npm run check:schema-migrations; npm run typecheck; npm test; npm run check:plan; git diff --check.`
-  - `Cleanup verification passed: docker ps showed no data-dyna-runtime-smoke or data-dyna-postgres-test containers remained after validation cleanup.`
-  - `Terminal parser truth passed: docs/plan/README.md Current Active Slice is PACK_COMPLETE with intended_handoff autopilot-closeout; STATUS/WORKSET mark all 5 P1 stages done; npm run check:plan, git diff --check, and plan_sync docs/plan pass with data-dyna-testable-runtime-deployment at 5 done / 0 pending.`
-  - `Residuals remain explicit for P2 auth/tenancy, P3 observability, P4 producer integration, P5 durable workers, P6 Agent runtime, cloud deployment, production database lifecycle, and secret management; recommended next pack is P2-lite auth/tenancy, then P3 observability before real producer traffic.`
+  - `plan_sync docs/plan reports data-dyna-testable-runtime-deployment STATUS/WORKSET as 5 done / 0 pending, with prior completed packs still done.`
+  - `npm run check:plan and git diff --check passed immediately before commit.`
+  - `Committed 15 P1 files as 6c11098 and pushed main to https://github.com/archpeng/data-dyna.git; workspace_scan reports branch main clean with 0 dirty files.`
+  - `GitHub Actions check-run db-migration-gate job 74100817483 for 6c110986a9fc36b0ae845bc126d2c6ada541ae93 completed with conclusion success.`
+  - `Closeout validation evidence preserved from review: migrations, repository test, Docker build/run, /healthz wait, smoke:runtime, runtime/workers tests, boundaries, schema migrations, typecheck, npm test, plan check, diff check, and container cleanup all passed.`
+  - `commit 6c11098 chore: add testable runtime deployment pushed to main`
   - `docs/plan/README.md`
   - `docs/plan/data-dyna-testable-runtime-deployment_PLAN.md`
   - `docs/plan/data-dyna-testable-runtime-deployment_STATUS.md`
   - `docs/plan/data-dyna-testable-runtime-deployment_WORKSET.md`
-  - `docs/deployment/testable-runtime-deployment.md`
   - `Dockerfile`
   - `.dockerignore`
-  - `package.json`
-  - `src/app/config/runtime-config.ts`
-  - `src/app/runtime-server.ts`
-  - `src/app/server.ts`
+  - `docs/deployment/testable-runtime-deployment.md`
   - `scripts/smoke-runtime.mjs`
+  - `src/app/runtime-server.ts`
 - terminal: `true`
 ## Autopilot Transition Contract
 

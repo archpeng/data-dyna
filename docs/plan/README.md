@@ -2,20 +2,25 @@
 
 ## Active Pack
 
-- `docs/plan/data-dyna-testable-runtime-deployment_PLAN.md`
-- `docs/plan/data-dyna-testable-runtime-deployment_STATUS.md`
-- `docs/plan/data-dyna-testable-runtime-deployment_WORKSET.md`
+- `docs/plan/data-dyna-auth-tenancy-foundation_PLAN.md`
+- `docs/plan/data-dyna-auth-tenancy-foundation_STATUS.md`
+- `docs/plan/data-dyna-auth-tenancy-foundation_WORKSET.md`
 
 ## Current Active Slice
 
-- `PACK_COMPLETE`
+- `DD-P2-S1`
+
 ## Intended Handoff
 
-- `autopilot-closeout`
+- `execute-plan`
+
 ## Queued Successor Pack
 
-- None currently defined in this control plane.
-- Activation note: `data-dyna-testable-runtime-deployment` was activated after `data-dyna-production-runtime-foundation` reached `PACK_COMPLETE` and the user selected P1/Dockerfile as the fastest path to practical runtime testing.
+- `docs/plan/data-dyna-production-readiness-master_PLAN.md`
+- `docs/plan/data-dyna-production-readiness-master_STATUS.md`
+- `docs/plan/data-dyna-production-readiness-master_WORKSET.md`
+- Master tracker note: lightweight P2-P6 sequence tracker; the active concrete pack is `data-dyna-auth-tenancy-foundation`.
+- Activation note: `data-dyna-auth-tenancy-foundation` was activated after `data-dyna-testable-runtime-deployment` reached `PACK_COMPLETE`; next concrete work starts with `DD-P2-S1` contract-first auth/tenancy planning.
 
 ## Autopilot Transition Contract
 
@@ -46,6 +51,10 @@
 - `docs/plan/data-dyna-production-runtime-foundation_STATUS.md`
 - `docs/plan/data-dyna-production-runtime-foundation_WORKSET.md`
 - terminal state: `PACK_COMPLETE`, owner `closeout`, state `DONE`; residual production deployment, auth/tenancy, observability, durable workers, external producers, and Agent runtime remain out of scope.
+- `docs/plan/data-dyna-testable-runtime-deployment_PLAN.md`
+- `docs/plan/data-dyna-testable-runtime-deployment_STATUS.md`
+- `docs/plan/data-dyna-testable-runtime-deployment_WORKSET.md`
+- terminal state: `PACK_COMPLETE`, owner `closeout`, state `DONE`; P1-lite Docker/testable runtime deployment was pushed at commit `6c11098`.
 - Do not resume completed packs unless a future replan explicitly reopens them.
 
 ## Autopilot Parser Invariants
@@ -69,7 +78,9 @@ These invariants are the source-of-truth guard against the closeout drift that b
 
 - This is the single-root repo-local machine control plane for current `data-dyna` productionization planning.
 - Keep this README, the active `PLAN`, `STATUS`, and `WORKSET` aligned in the same writeback turn.
-- Active-slice phase reports should use `stepId = PACK_COMPLETE` only for the repo-local closeout prompt surface; routed `DD-P1-CLOSEOUT-S1` review has completed.
+- Active-slice phase reports should use `stepId = DD-P2-S1` while this active slice remains current.
+- `data-dyna-auth-tenancy-foundation` is active as the concrete P2-lite pack; `DD-P2-S1` must write the auth/tenancy contract before runtime auth code changes.
+- `data-dyna-production-readiness-master` now tracks the lightweight P2-P6 order and boundary law without over-specifying late-stage implementation details.
 - `data-dyna-testable-runtime-deployment` reached `PACK_COMPLETE` after `DD-P1-CLOSEOUT-S1` audited Dockerfile, runtime DB wiring, smoke gate, runbook, validation evidence, and residual handoff.
 - `DD-P1-S4` review accepted the Docker/testable-runtime runbook and preflight evidence and advanced the pack to `DD-P1-CLOSEOUT-S1`.
 - `DD-P1-S3` review accepted the runtime smoke gate evidence and advanced the pack to `DD-P1-S4`.
