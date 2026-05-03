@@ -13,13 +13,19 @@
     "test:evidence": "tsx tests/evidence-dd-p5-s1.spec.ts",
     "check:boundaries": "node scripts/check-boundaries.mjs",
     "check:schema-migrations": "node scripts/check-schema-migration-safety.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:test:up": "docker compose up -d postgres",
+    "db:test:down": "docker compose down",
+    "db:test:reset": "docker compose down -v && docker compose up -d postgres",
+    "db:migrate:test": "node scripts/run-migrations.mjs",
+    "test:db:migrations": "node scripts/check-db-migrations.mjs"
   },
   "dependencies": {
     "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
+    "pg": "^8.20.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },

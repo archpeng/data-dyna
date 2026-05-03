@@ -6,7 +6,7 @@ Wrap the existing deterministic Data Core with a minimal production runtime foun
 
 ## Prerequisite
 
-This pack is queued behind `data-dyna-db-migration-execution-gate`. Activate it only after the DB gate reaches `PACK_COMPLETE` or a replan explicitly accepts an environment-limited alternative. Runtime slices depend on a local/CI PostgreSQL substrate and migration runner.
+This pack was queued behind `data-dyna-db-migration-execution-gate` and is now active because the DB gate reached `PACK_COMPLETE` with accepted local/CI PostgreSQL migration evidence. Runtime slices depend on the local/CI PostgreSQL substrate and migration runner delivered by that pack.
 
 ## Scope
 
@@ -83,7 +83,7 @@ Accepted review of each stage activates the next stage in this order. Do not sta
 #### `DD-RUNTIME-S1` — framework/runtime decision
 
 - Owner: `execute-plan`
-- State: `QUEUED`
+- State: `READY`
 - Priority: `highest`
 
 目标：

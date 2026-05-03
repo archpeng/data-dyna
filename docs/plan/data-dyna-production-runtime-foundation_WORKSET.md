@@ -12,42 +12,23 @@
 
 ## Active Stage
 
-### `DD-RUNTIME-S1`
+### `PACK_COMPLETE`
 
-- Owner: `execute-plan`
-- State: `QUEUED`
-- Priority: `highest`
+- Owner: `closeout`
+- State: `DONE`
+- Priority: `terminal`
 
 目标：
 
-- Make the Fastify vs NestJS decision explicit before adding runtime dependencies or framework-specific code.
+- close the pack through the repo-local closeout prompt surface
 
 必须交付：
 
-1. Short decision doc, for example `docs/runtime-foundation-decision.md`, comparing Fastify and NestJS for current repo needs.
-2. Chosen framework, DB client, and worker mode recorded with rationale.
-3. Package dependency plan that distinguishes runtime dependencies from dev/test dependencies.
-4. Updated `src/app/README.md` pointer if the decision changes adapter expectations.
-
-done_when:
-
-1. The repo records one chosen HTTP framework and why it fits the current minimal runtime foundation.
-2. The decision explicitly states whether worker foundation uses a simple script/runner, cron-style entrypoint, or queue, and what remains deferred.
-3. The decision does not claim full production deployment, Agent runtime, auth, or observability is complete.
-4. `git diff --check`, `npm run check:boundaries`, `npm run check:schema-migrations`, and `npm run typecheck` pass.
-
-stop_boundary:
-
-1. Stop if choosing Fastify vs NestJS requires unprovided production non-functional requirements.
-2. Stop before adding runtime dependencies without a recorded decision.
-3. Stop if the decision would require moving deterministic Core functions into `src/app`.
+1. final closeout summary and residual handoff
 
 必须避免：
 
-1. Do not silently pick a framework without tradeoff notes.
-2. Do not overbuild a framework module system beyond `/events` and minimal worker foundation.
-3. Do not start Agent runtime integration in this decision slice.
-
+1. dispatching another execute/review phase from terminal parser truth
 ## Slice Ownership
 
 ### `DD-RUNTIME-S1`
@@ -178,7 +159,7 @@ find docs/plan -maxdepth 1 -type f -name '*.md' -print | sort
 
 ## Execution Notes
 
-- This pack is queued until `data-dyna-db-migration-execution-gate` reaches `PACK_COMPLETE` or a replan explicitly accepts an environment-limited alternative.
+- This pack is active because `data-dyna-db-migration-execution-gate` reached `PACK_COMPLETE` with accepted local/CI PostgreSQL migration evidence.
 - The active stage ID is the `stepId` for active-slice `autopilot_report` calls after activation.
 - `execute/completed` routes to `execution-reality-audit`, not terminal completion.
 - Accepted review is the only normal point where `STATUS` / `WORKSET` should advance to the next stage.
@@ -198,12 +179,25 @@ Known out-of-scope residuals for this pack:
 
 ## Machine Queue
 
-- active_step: `DD-RUNTIME-S1`
-- latest_completed_step: `NONE`
-- intended_handoff: `execute-plan`
-- activation_condition: `Activate only after data-dyna-db-migration-execution-gate reaches PACK_COMPLETE or a replan explicitly accepts an environment-limited alternative.`
-- latest_planning_summary: Created production runtime foundation pack as the queued successor after the DB migration execution gate.
+- active_step: `PACK_COMPLETE`
+- latest_completed_step: `DD-DB-GATE-CLOSEOUT-S1`
+- intended_handoff: `autopilot-closeout`
+- latest_closeout_summary: Completed DB gate closeout and activated the runtime foundation pack.
 - latest_verification:
-  - `Production runtime PLAN/STATUS/WORKSET define seven proof-carrying stages plus terminal PACK_COMPLETE.`
-  - `First runtime slice is a framework/runtime decision so Fastify vs NestJS is not chosen silently.`
-  - `Pack explicitly excludes full Agent runtime, external producer integration, and production deployment.`
+  - `Closeout content audit confirmed local/CI-only PostgreSQL conventions, required package scripts, GitHub Actions PostgreSQL service, visible CI command order, and no workflow `secrets.*` references.`
+  - `Validation passed: `npm run db:test:reset`, `npm run check:schema-migrations`, `npm run test:db:migrations`, `npm run check:boundaries`, `npm test`, `npm run typecheck`, and `git diff --check`.`
+  - ``npm run test:db:migrations` applied 7 migrations, verified 33 expected tables, and proved required CHECK/catalog constraints in PostgreSQL.`
+  - `Parser consistency check passed: DB gate STATUS/WORKSET are `PACK_COMPLETE` / `closeout` / `DONE`; README and runtime STATUS/WORKSET now activate `DD-RUNTIME-S1` / `execute-plan` / `READY`.`
+  - ``plan_sync /home/peng/dt-git/github/data-dyna/docs/plan` reports DB gate STATUS/WORKSET 5 done / 0 pending and runtime foundation STATUS/WORKSET 0 done / 7 pending.`
+  - `docs/plan/README.md`
+  - `docs/plan/data-dyna-db-migration-execution-gate_PLAN.md`
+  - `docs/plan/data-dyna-db-migration-execution-gate_STATUS.md`
+  - `docs/plan/data-dyna-db-migration-execution-gate_WORKSET.md`
+  - `docs/plan/data-dyna-production-runtime-foundation_PLAN.md`
+  - `docs/plan/data-dyna-production-runtime-foundation_STATUS.md`
+  - `docs/plan/data-dyna-production-runtime-foundation_WORKSET.md`
+  - `.github/workflows/db-migration-gate.yml`
+  - `docs/local-postgres.md`
+  - `scripts/run-migrations.mjs`
+  - `scripts/check-db-migrations.mjs`
+- terminal: `true`

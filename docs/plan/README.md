@@ -2,24 +2,20 @@
 
 ## Active Pack
 
-- `docs/plan/data-dyna-db-migration-execution-gate_PLAN.md`
-- `docs/plan/data-dyna-db-migration-execution-gate_STATUS.md`
-- `docs/plan/data-dyna-db-migration-execution-gate_WORKSET.md`
-
-## Current Active Slice
-
-- `DD-DB-GATE-S1`
-
-## Intended Handoff
-
-- `execute-plan`
-
-## Queued Successor Pack
-
 - `docs/plan/data-dyna-production-runtime-foundation_PLAN.md`
 - `docs/plan/data-dyna-production-runtime-foundation_STATUS.md`
 - `docs/plan/data-dyna-production-runtime-foundation_WORKSET.md`
-- Activation rule: after `data-dyna-db-migration-execution-gate` reaches `PACK_COMPLETE`, update this README to the production runtime pack and start `DD-RUNTIME-S1`.
+
+## Current Active Slice
+
+- `PACK_COMPLETE`
+## Intended Handoff
+
+- `autopilot-closeout`
+## Queued Successor Pack
+
+- None currently defined in this control plane.
+- Activation note: `data-dyna-production-runtime-foundation` was activated after `data-dyna-db-migration-execution-gate` reached `PACK_COMPLETE` with accepted local/CI PostgreSQL migration evidence.
 
 ## Autopilot Transition Contract
 
@@ -42,6 +38,10 @@
 - `docs/plan/data-dyna-vibecoding-guardrails_STATUS.md`
 - `docs/plan/data-dyna-vibecoding-guardrails_WORKSET.md`
 - terminal state: `PACK_COMPLETE`, owner `closeout`, state `DONE`.
+- `docs/plan/data-dyna-db-migration-execution-gate_PLAN.md`
+- `docs/plan/data-dyna-db-migration-execution-gate_STATUS.md`
+- `docs/plan/data-dyna-db-migration-execution-gate_WORKSET.md`
+- terminal state: `PACK_COMPLETE`, owner `closeout`, state `DONE`; residual production DB ownership remains out of scope.
 - Do not resume completed packs unless a future replan explicitly reopens them.
 
 ## Hard Closeout Guard
@@ -54,6 +54,7 @@
 
 - This is the single-root repo-local machine control plane for current `data-dyna` productionization planning.
 - Keep this README, the active `PLAN`, `STATUS`, and `WORKSET` aligned in the same writeback turn.
-- Active-slice phase reports should use `stepId = DD-DB-GATE-S1` while this active slice remains current.
+- Active-slice phase reports should use `stepId = DD-RUNTIME-S1` while this active slice remains current.
+- `data-dyna-db-migration-execution-gate` reached `PACK_COMPLETE` after closeout audit accepted Docker PostgreSQL substrate, migration runner, migration constraint integration gate, and CI DB gate evidence.
 - Skill-backed routed phases require tools that include at least `read` and `autopilot_report`.
 - Do not ask whether to continue as the normal path; continuation is encoded through each slice's `done_when` / `stop_boundary`.

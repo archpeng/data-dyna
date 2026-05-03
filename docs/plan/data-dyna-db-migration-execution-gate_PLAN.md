@@ -81,7 +81,7 @@ Accepted review of each stage activates the next stage in this order. Do not sta
 #### `DD-DB-GATE-S1` — local Docker PostgreSQL substrate
 
 - Owner: `execute-plan`
-- State: `READY`
+- State: `DONE`
 - Priority: `highest`
 
 目标：
@@ -117,7 +117,7 @@ stop_boundary:
 #### `DD-DB-GATE-S2` — migration runner
 
 - Owner: `execute-plan`
-- State: `QUEUED`
+- State: `DONE`
 - Priority: `highest`
 
 目标：
@@ -153,7 +153,7 @@ stop_boundary:
 #### `DD-DB-GATE-S3` — migration constraint integration tests
 
 - Owner: `execute-plan`
-- State: `QUEUED`
+- State: `DONE`
 - Priority: `highest`
 
 目标：
@@ -189,7 +189,7 @@ stop_boundary:
 #### `DD-DB-GATE-S4` — CI DB gate
 
 - Owner: `execute-plan`
-- State: `QUEUED`
+- State: `DONE`
 - Priority: `high`
 
 目标：
@@ -225,7 +225,7 @@ stop_boundary:
 #### `DD-DB-GATE-CLOSEOUT-S1` — DB gate audit and successor activation
 
 - Owner: `execution-reality-audit`
-- State: `QUEUED`
+- State: `DONE`
 - Priority: `medium`
 
 目标：
