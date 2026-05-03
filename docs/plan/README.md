@@ -2,20 +2,22 @@
 
 ## Active Pack
 
-- `docs/plan/data-dyna-production-runtime-foundation_PLAN.md`
-- `docs/plan/data-dyna-production-runtime-foundation_STATUS.md`
-- `docs/plan/data-dyna-production-runtime-foundation_WORKSET.md`
+- `docs/plan/data-dyna-testable-runtime-deployment_PLAN.md`
+- `docs/plan/data-dyna-testable-runtime-deployment_STATUS.md`
+- `docs/plan/data-dyna-testable-runtime-deployment_WORKSET.md`
 
 ## Current Active Slice
 
-- `PACK_COMPLETE`
+- `DD-P1-S1`
+
 ## Intended Handoff
 
-- `autopilot-closeout`
+- `execute-plan`
+
 ## Queued Successor Pack
 
 - None currently defined in this control plane.
-- Activation note: `data-dyna-production-runtime-foundation` was activated after `data-dyna-db-migration-execution-gate` reached `PACK_COMPLETE` with accepted local/CI PostgreSQL migration evidence and commit `5de1b64` pushed to `origin/main`.
+- Activation note: `data-dyna-testable-runtime-deployment` was activated after `data-dyna-production-runtime-foundation` reached `PACK_COMPLETE` and the user selected P1/Dockerfile as the fastest path to practical runtime testing.
 
 ## Autopilot Transition Contract
 
@@ -42,6 +44,10 @@
 - `docs/plan/data-dyna-db-migration-execution-gate_STATUS.md`
 - `docs/plan/data-dyna-db-migration-execution-gate_WORKSET.md`
 - terminal state: `PACK_COMPLETE`, owner `closeout`, state `DONE`; residual production DB ownership remains out of scope.
+- `docs/plan/data-dyna-production-runtime-foundation_PLAN.md`
+- `docs/plan/data-dyna-production-runtime-foundation_STATUS.md`
+- `docs/plan/data-dyna-production-runtime-foundation_WORKSET.md`
+- terminal state: `PACK_COMPLETE`, owner `closeout`, state `DONE`; residual production deployment, auth/tenancy, observability, durable workers, external producers, and Agent runtime remain out of scope.
 - Do not resume completed packs unless a future replan explicitly reopens them.
 
 ## Autopilot Parser Invariants
@@ -65,7 +71,8 @@ These invariants are the source-of-truth guard against the closeout drift that b
 
 - This is the single-root repo-local machine control plane for current `data-dyna` productionization planning.
 - Keep this README, the active `PLAN`, `STATUS`, and `WORKSET` aligned in the same writeback turn.
-- Active-slice phase reports should use `stepId = PACK_COMPLETE` only for repo-local closeout after this pack is terminal.
+- Active-slice phase reports should use `stepId = DD-P1-S1` while this active slice remains current.
+- `DD-P1-S1` starts the P1 testable runtime deployment pack with a Dockerfile-first substrate and simplification policy.
 - `DD-RUNTIME-S1` review accepted the runtime decision evidence and advanced the pack to `DD-RUNTIME-S2`.
 - `DD-RUNTIME-S2` review accepted the app/config/server skeleton evidence and advanced the pack to `DD-RUNTIME-S3`.
 - `DD-RUNTIME-S3` review accepted the PostgreSQL raw event repository evidence and advanced the pack to `DD-RUNTIME-S4`.
