@@ -2,82 +2,78 @@
 
 ## Current State
 
-- state: `READY`
-- owner: `execute-plan`
+- state: `DONE`
+- owner: `closeout`
 - route: `PLAN -> EXEC -> REVIEW -> REPLAN -> CLOSEOUT`
 - workstream: `data-dyna-production-runtime-foundation`
-- pack_mode: `single-root docs/plan machine-compatible active-pack`
+- pack_mode: `single-root docs/plan machine-compatible completed-pack`
 - source_truth: `src/app/README.md`, `docs/current-architecture-and-vibecoding-review.md sections 8-11`, DB gate pack outputs
 
 ## Current Step
 
-- active_step: `DD-RUNTIME-S1`
-- active_wave: `wave-1`
-- mode: `ready_for_execute`
-- intended_handoff: `execute-plan`
+- active_step: `PACK_COMPLETE`
+- active_wave: `wave-7`
+- mode: `pack_complete`
+- intended_handoff: `closeout`
 
 ## Planned Stages
 
-- [ ] `DD-RUNTIME-S1` framework/runtime decision
-- [ ] `DD-RUNTIME-S2` app config and server skeleton
-- [ ] `DD-RUNTIME-S3` PostgreSQL raw event repository
-- [ ] `DD-RUNTIME-S4` `/events` HTTP adapter
-- [ ] `DD-RUNTIME-S5` minimal worker foundation
-- [ ] `DD-RUNTIME-S6` runtime integration test gate
-- [ ] `DD-RUNTIME-CLOSEOUT-S1` production runtime foundation audit
+- [x] `DD-RUNTIME-S1` framework/runtime decision
+- [x] `DD-RUNTIME-S2` app config and server skeleton
+- [x] `DD-RUNTIME-S3` PostgreSQL raw event repository
+- [x] `DD-RUNTIME-S4` `/events` HTTP adapter
+- [x] `DD-RUNTIME-S5` minimal worker foundation
+- [x] `DD-RUNTIME-S6` runtime integration test gate
+- [x] `DD-RUNTIME-CLOSEOUT-S1` production runtime foundation audit
 
 ## Immediate Focus
 
-### `DD-RUNTIME-S1`
+### `PACK_COMPLETE`
 
-- Owner: `execute-plan`
-- State: `READY`
-- Priority: `highest`
+- Owner: `closeout`
+- State: `DONE`
+- Priority: `terminal`
 
 目标：
 
-- Make the Fastify vs NestJS decision explicit before adding runtime dependencies or framework-specific code.
+- close the pack through the repo-local closeout prompt surface
 
 必须交付：
 
-1. Short decision doc, for example `docs/runtime-foundation-decision.md`, comparing Fastify and NestJS for current repo needs.
-2. Chosen framework, DB client, and worker mode recorded with rationale.
-3. Package dependency plan that distinguishes runtime dependencies from dev/test dependencies.
-4. Updated `src/app/README.md` pointer if the decision changes adapter expectations.
-
-done_when:
-
-1. The repo records one chosen HTTP framework and why it fits the current minimal runtime foundation.
-2. The decision explicitly states whether worker foundation uses a simple script/runner, cron-style entrypoint, or queue, and what remains deferred.
-3. The decision does not claim full production deployment, Agent runtime, auth, or observability is complete.
-4. `git diff --check`, `npm run check:boundaries`, `npm run check:schema-migrations`, and `npm run typecheck` pass.
-
-stop_boundary:
-
-1. Stop if choosing Fastify vs NestJS requires unprovided production non-functional requirements.
-2. Stop before adding runtime dependencies without a recorded decision.
-3. Stop if the decision would require moving deterministic Core functions into `src/app`.
+1. final closeout summary and residual handoff
 
 必须避免：
 
-1. Do not silently pick a framework without tradeoff notes.
-2. Do not overbuild a framework module system beyond `/events` and minimal worker foundation.
-3. Do not start Agent runtime integration in this decision slice.
+1. dispatching another execute/review phase from terminal parser truth
+## Accepted Closeout Evidence
+
+- Audited `DD-RUNTIME-S1` through `DD-RUNTIME-S6` evidence across the runtime decision doc, Fastify app skeleton, PostgreSQL repository, `/events` adapter, contract-only worker foundation, runtime integration tests, and validation docs.
+- Updated `docs/current-architecture-and-vibecoding-review.md` from future-only runtime recommendations to current minimal runtime foundation status while keeping production hardening residuals explicit.
+- Preserved residuals for production deployment, auth/tenancy, observability, durable worker reliability, Agent runtime, external producer instrumentation, production DB lifecycle, and queue hardening.
+- Terminal writeback marked `DD-RUNTIME-CLOSEOUT-S1` done and this pack `PACK_COMPLETE` only after validation and parser checks passed.
 
 ## Machine State
 
-- active_step: `DD-RUNTIME-S1`
-- latest_completed_step: `NONE`
-- intended_handoff: `execute-plan`
-- activation_condition: `Satisfied: data-dyna-db-migration-execution-gate reached PACK_COMPLETE with accepted local/CI PostgreSQL migration evidence.`
-- latest_planning_summary: `Repaired parser truth after DB gate closeout: runtime foundation is active at DD-RUNTIME-S1, not PACK_COMPLETE.`
+- active_step: `PACK_COMPLETE`
+- latest_completed_step: `PACK_COMPLETE`
+- intended_handoff: `autopilot-closeout`
+- latest_closeout_summary: Closed data-dyna-production-runtime-foundation at PACK_COMPLETE.
 - latest_verification:
-  - `DB gate closeout passed before commit 5de1b64: npm run db:test:reset, npm run check:schema-migrations, npm run test:db:migrations, npm run check:boundaries, npm test, npm run typecheck, and git diff --check.`
-  - `Commit and push succeeded for the completed DB gate: origin/main advanced 8d660bb..5de1b64.`
-  - `Runtime foundation PLAN/STATUS/WORKSET define seven proof-carrying stages plus terminal PACK_COMPLETE.`
-  - `Current parser truth was repaired so README, STATUS, and WORKSET all name DD-RUNTIME-S1 with intended handoff execute-plan.`
-  - `Autopilot parser invariant is now enforced by npm run check:plan.`
-
+  - `plan_sync docs/plan reports data-dyna-production-runtime-foundation STATUS and WORKSET as 7 done / 0 pending; completed prerequisite packs remain 0 pending.`
+  - `Closeout recheck passed: npm run check:plan and git diff --check.`
+  - `Review validation already gathered: npm run db:test:up; npm run test:db:migrations; npm run test:app:repository; npm run test:runtime; npm run test:app:workers; npm run check:boundaries; npm run check:schema-migrations; npm run typecheck; npm test; closeout proof probe.`
+  - `workspace_scan: data-dyna on main, remote https://github.com/archpeng/data-dyna.git, 18 dirty files pending persistence.`
+  - `docs/plan/README.md`
+  - `docs/plan/data-dyna-production-runtime-foundation_STATUS.md`
+  - `docs/plan/data-dyna-production-runtime-foundation_WORKSET.md`
+  - `docs/current-architecture-and-vibecoding-review.md`
+  - `docs/runtime-foundation-decision.md`
+  - `src/app/**`
+  - `tests/app-runtime-s2.spec.ts`
+  - `tests/postgres-raw-event-repository.spec.ts`
+  - `tests/app-runtime-s4.spec.ts`
+  - `tests/app-workers-s5.spec.ts`
+- terminal: `true`
 ## Autopilot Transition Contract
 
 - `wave_plan/completed` -> `execute` same active step.
@@ -97,14 +93,21 @@ stop_boundary:
 
 ## Latest Evidence
 
-- `src/app/README.md` already defines future adapter surfaces for `/events`, repositories, and workers.
-- Current package scripts include guardrail checks, split tests, DB migration checks, full `npm test`, typecheck, and `check:plan`.
-- Current code has deterministic ingestion handlers and `RawEventStore` interface ready for adapter wrapping.
-- `plan_sync docs/plan` reports this runtime pack has `0 done / 7 pending`, which is expected before `DD-RUNTIME-S1` execution.
+- `DD-RUNTIME-S1` accepted evidence: `docs/runtime-foundation-decision.md` records Fastify, `pg` / node-postgres, simple script/runner worker mode, dependency plan, and production residuals.
+- `src/app/README.md` defines future adapter surfaces and points to the runtime foundation decision.
+- Current package scripts include guardrail checks, split tests, DB migration checks, repository integration check `test:app:repository`, full `npm test`, typecheck, `check:plan`, and local `app:dev` Fastify start.
+- Current code has deterministic ingestion handlers and `RawEventStore` interface; `DD-RUNTIME-S3` adds the PostgreSQL adapter under `src/app/repositories` without moving Core semantics.
+- `DD-RUNTIME-S2` execution evidence adds local/test runtime config, Fastify app construction, `/healthz`, and an app construction test without connecting to PostgreSQL or production resources.
+- `DD-RUNTIME-S3` execution evidence adds accepted/duplicate/invalid raw-event persistence against migrated local PostgreSQL.
+- `DD-RUNTIME-S4` accepted evidence adds `/events` and `/events/batch` Fastify route adapters with local PostgreSQL-backed API proof.
+- `DD-RUNTIME-S5` accepted evidence adds contract-only worker descriptors and boundary proof for projection, snapshot, benchmark, and evidence worker ownership.
+- `DD-RUNTIME-S6` accepted evidence adds explicit runtime-test isolation assertions plus docs telling future AI coders when to run the local PostgreSQL runtime integration gate.
+- `DD-RUNTIME-CLOSEOUT-S1` accepted evidence audits the full runtime foundation, updates architecture/status docs, and preserves residuals for production hardening, Agent runtime, external producers, observability, auth/tenancy, and durable queues.
+- `plan_sync docs/plan` reports this runtime pack as `7 done / 0 pending`; this pack is terminal `PACK_COMPLETE`.
 
 ## Next Step
 
-- Execute `DD-RUNTIME-S1` with `execute-plan`; do not add runtime dependencies before the framework/runtime decision is recorded.
+- Route to the repo-local closeout prompt surface for final commit/push handling; do not start new runtime implementation from this completed pack unless a future replan explicitly opens a successor workstream.
 
 ## Blockers
 
@@ -113,12 +116,12 @@ stop_boundary:
 ## Gate State
 
 - plan_pack_created: `true`
-- active_pack: `docs/plan/data-dyna-production-runtime-foundation_PLAN.md`, `docs/plan/data-dyna-production-runtime-foundation_STATUS.md`, `docs/plan/data-dyna-production-runtime-foundation_WORKSET.md`
+- terminal_pack: `docs/plan/data-dyna-production-runtime-foundation_PLAN.md`, `docs/plan/data-dyna-production-runtime-foundation_STATUS.md`, `docs/plan/data-dyna-production-runtime-foundation_WORKSET.md`
 - workspace_branch: `main`
 - external_repo_edits_allowed: `false unless a future explicit workset authorizes them`
 
 ## Residuals / Notes
 
-- Full Agent runtime, real Pi provider integration, external producer instrumentation, production auth/tenancy, deployment, and mature observability remain out of scope for this runtime foundation pack.
-- Do not mark this pack `PACK_COMPLETE` until all seven runtime stages have accepted review evidence or explicit residuals and `DD-RUNTIME-CLOSEOUT-S1` is accepted.
-- If autopilot dispatch reads `PACK_COMPLETE` for this pack before all runtime stages are complete, treat it as parser drift and route `replan` rather than continuing closeout.
+- Full Agent runtime, real Pi provider integration, external producer instrumentation, production auth/tenancy, deployment, mature observability, production DB lifecycle, and durable queue reliability remain out of scope for this completed runtime foundation pack.
+- This pack is `PACK_COMPLETE`; do not reopen it unless a future replan explicitly creates a successor workstream.
+- Remote GitHub Actions execution result was not observed locally; local validation and workflow content parity are preserved as evidence.

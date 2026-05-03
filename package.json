@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Deterministic Data Core and Evidence Service foundation for independent cafés.",
   "scripts": {
-    "test": "tsx tests/event-contract.spec.ts && tsx tests/ingestion-handlers.spec.ts && tsx tests/projections-dd-p1-s1.spec.ts && tsx tests/snapshots-dd-p1-s2.spec.ts && tsx tests/benchmarks-dd-p2-s1.spec.ts && tsx tests/agent-dd-p3-s1.spec.ts && tsx tests/agent-dd-p3-s2.spec.ts && tsx tests/merchant-review-dd-p4-s1.spec.ts && tsx tests/evidence-dd-p5-s1.spec.ts",
+    "test": "tsx tests/event-contract.spec.ts && tsx tests/ingestion-handlers.spec.ts && tsx tests/projections-dd-p1-s1.spec.ts && tsx tests/snapshots-dd-p1-s2.spec.ts && tsx tests/benchmarks-dd-p2-s1.spec.ts && tsx tests/agent-dd-p3-s1.spec.ts && tsx tests/agent-dd-p3-s2.spec.ts && tsx tests/merchant-review-dd-p4-s1.spec.ts && tsx tests/evidence-dd-p5-s1.spec.ts && tsx tests/app-runtime-s2.spec.ts && tsx tests/app-workers-s5.spec.ts",
     "test:contracts": "tsx tests/event-contract.spec.ts",
     "test:core": "tsx tests/ingestion-handlers.spec.ts && tsx tests/projections-dd-p1-s1.spec.ts && tsx tests/snapshots-dd-p1-s2.spec.ts && tsx tests/benchmarks-dd-p2-s1.spec.ts",
     "test:agent": "tsx tests/agent-dd-p3-s1.spec.ts && tsx tests/agent-dd-p3-s2.spec.ts",
@@ -15,6 +15,10 @@
     "check:schema-migrations": "node scripts/check-schema-migration-safety.mjs",
     "check:plan": "node scripts/check-plan-control-plane.mjs",
     "typecheck": "tsc --noEmit",
+    "app:dev": "tsx src/app/server.ts",
+    "test:runtime": "tsx tests/app-runtime-s4.spec.ts",
+    "test:app:repository": "tsx tests/postgres-raw-event-repository.spec.ts",
+    "test:app:workers": "tsx tests/app-workers-s5.spec.ts",
     "db:test:up": "docker compose up -d postgres",
     "db:test:down": "docker compose down",
     "db:test:reset": "docker compose down -v && docker compose up -d postgres",
@@ -22,11 +26,12 @@
     "test:db:migrations": "node scripts/check-db-migrations.mjs"
   },
   "dependencies": {
+    "fastify": "^5.8.5",
+    "pg": "^8.20.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
-    "pg": "^8.20.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },

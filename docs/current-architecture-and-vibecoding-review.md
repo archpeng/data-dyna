@@ -53,9 +53,9 @@ Evidence Store 记录实验前后效果和证据。
 
 主要不足也明确：
 
-- 当前仍是本地函数和 SQL schema MVP，不是完整生产服务；
-- 尚无 HTTP API app、durable worker、真实数据库执行器、CI、lint、import-boundary 检查；
-- 模块边界依赖约定和测试，没有被自动化架构规则强制执行；
+- 当前已从本地函数和 SQL schema MVP 前进到最小 Fastify + PostgreSQL raw-event runtime foundation，但仍不是完整生产服务；
+- 已有 `/events` API、local/CI PostgreSQL migration gate、raw-event PostgreSQL repository、boundary/schema/plan checks 和 contract-only worker seams；仍缺 durable queue workers、production deployment/auth/observability、真实 Agent runtime 和外部 producer instrumentation；
+- 模块边界已有轻量 `check:boundaries` 自动化，但仍不是完整 lint / CODEOWNERS / policy-as-code 治理；
 - `.pi` skill / prompt 已存在，但还没有真实 Pi SDK runtime/provider 集成；
 - 外部 repo 接入、真实 Datamesh、真实 POS/小程序/mobile-hq instrumentation 尚未开始。
 
@@ -64,10 +64,10 @@ Evidence Store 记录实验前后效果和证据。
 | 维度 | 评分 | 结论 |
 |---|---:|---|
 | 业务闭环清晰度 | 9/10 | 从事实到证据的闭环已经明确。 |
-| 模块化程度 | 8/10 | 模块边界清楚，但缺少自动化边界治理。 |
-| 可测试性 | 8/10 | 本地 deterministic 测试完整；缺少 DB/API/worker 集成测试。 |
+| 模块化程度 | 9/10 | 模块边界清楚，并已有 `check:boundaries`、module README 和 plan gate；完整 CODEOWNERS/lint 仍可后续增强。 |
+| 可测试性 | 9/10 | 本地 deterministic 测试完整，并已有 local PostgreSQL migration/repository/runtime gates；生产 e2e 仍未覆盖。 |
 | Vibe coding 适配性 | 8/10 | 非常适合 AI 按模块扩展；高风险状态机仍需人审和 guardrail。 |
-| 生产就绪度 | 4/10 | 当前是 MVP foundation，生产部署、可观测、权限和真实集成尚未完成。 |
+| 生产就绪度 | 5/10 | 已有最小 runtime foundation；生产部署、可观测、权限和真实集成尚未完成。 |
 
 ---
 
@@ -81,6 +81,7 @@ Evidence Store 记录实验前后效果和证据。
 | Ingestion | `src/ingestion/event-handlers.ts` | 处理单事件和批量事件；Zod 校验；重复幂等处理；无权威 PostHog 异步 sink。 |
 | Raw Event Store | `src/ingestion/raw-event-store.ts` | 本地内存 raw event / invalid event store 接口与实现。 |
 | PostHog Sink Boundary | `src/ingestion/posthog-sink.ts` | 产品分析镜像边界；不是事实源。 |
+| App Adapter Foundation | `src/app/**` | Fastify `/healthz`、`/events`、`/events/batch`；local/test runtime config；PostgreSQL raw-event repository；contract-only worker seams；不拥有 production deployment/auth/observability/Agent runtime。 |
 | Datamesh RFM Adapter | `src/datamesh/rfm-member-labels.ts` | 将 `report.crm.member_labels` 行转为 `member_rfm_snapshots` 输入；不重算 RFM。 |
 | Business Projections | `src/projections/business-projections.ts` | 从 raw events + RFM rows 重建 sessions、carts、orders、payments、refunds、menus、members、merchant actions 等投影。 |
 | Independent Cafe Snapshots | `src/snapshots/independent-cafe-snapshots.ts` | 生成独立咖啡店 profile、segment candidate、metric definitions、metric snapshots。 |
@@ -118,8 +119,16 @@ Evidence Store 记录实验前后效果和证据。
 - `tests/agent-dd-p3-s2.spec.ts`
 - `tests/merchant-review-dd-p4-s1.spec.ts`
 - `tests/evidence-dd-p5-s1.spec.ts`
+- `tests/app-runtime-s2.spec.ts`
+- `tests/app-workers-s5.spec.ts`
 
-这些测试证明：当前闭环主要靠纯函数、Zod schema、fixture 和内存 store 验证，不依赖生产服务和秘密凭证。
+另有 local PostgreSQL-backed gates：
+
+- `npm run test:db:migrations` validates migration execution and required PostgreSQL constraints.
+- `npm run test:app:repository` validates `PostgresRawEventRepository` accepted/duplicate/invalid persistence.
+- `npm run test:runtime` validates the Fastify `/events` + `/events/batch` route path against migrated local PostgreSQL.
+
+这些测试证明：当前闭环主要靠纯函数、Zod schema、fixture、内存 store 和 local PostgreSQL integration gates 验证，不依赖生产服务和秘密凭证。
 
 ---
 
@@ -533,30 +542,36 @@ DD-P5-S1 -> tests/evidence-dd-p5-s1.spec.ts
 
 ### 6.2 当前不足
 
-#### 6.2.1 边界没有被 import rules 自动强制
+#### 6.2.1 边界已有轻量 import rule，但不是完整治理
 
-当前模块依赖关系清楚，但主要靠目录约定、代码习惯和测试。没有：
+当前模块依赖关系清楚，并已有 `scripts/check-boundaries.mjs` 自动检查 Core / Agent / Evidence 关键 import 方向。仍未实现：
 
 - ESLint boundary rule；
 - dependency-cruiser；
-- custom grep check；
 - CODEOWNERS；
-- CI import matrix。
+- CI import matrix beyond current command wiring。
 
-风险：后续 AI coder 可能不小心让 Core 反向 import Agent，或让 ingestion 直接计算 metrics。
+风险：后续 AI coder 仍可能在尚未覆盖的新目录或新 runtime surface 中引入不当依赖；因此修改 `src/*` import 后仍必须运行 `npm run check:boundaries` 并人工确认 owner 边界。
 
-#### 6.2.2 还没有 app / API / worker 分层
+#### 6.2.2 runtime foundation 已有最小 app/API/DB/worker seam，但不是生产运行层
 
-当前是本地 MVP，缺少生产运行层：
+当前不再只是本地 pure-function MVP；已新增最小 runtime foundation：
 
-- 没有 Fastify/NestJS app；
-- 没有 `/events` HTTP route；
-- 没有 worker queue；
-- 没有真实 PostgreSQL repository；
-- migration SQL 没有自动执行检查；
-- in-memory stores 不能代表生产一致性。
+- Fastify app/config/server skeleton；
+- `/events` and `/events/batch` HTTP routes；
+- local/test-only `PostgresRawEventRepository` for raw events；
+- local/CI migration execution gate；
+- contract-only projection/snapshot/benchmark/evidence worker seams。
 
-这不是设计错误，但需要在下一计划中明确，不应被误认为 production ready。
+仍未完成的生产运行层包括：
+
+- production deployment, secrets, rollout/rollback, and auth/tenancy；
+- durable queue workers, retry/checkpoint/dead-letter semantics, and production scheduler；
+- production observability / incident-response ownership；
+- projection/snapshot/benchmark/evidence repositories beyond raw events；
+- external producer instrumentation and real traffic ingress hardening。
+
+这不是设计错误；它是 intentionally minimal foundation，不应被误认为 production ready。
 
 #### 6.2.3 Agent runtime 还是 adapter / fixture 边界
 
@@ -640,22 +655,22 @@ DD-P5-S1 -> tests/evidence-dd-p5-s1.spec.ts
 3. **纯函数多**：AI 修改局部函数后能快速跑测试。
 4. **禁止事项写进类型和 schema**：不是只靠 README 记忆。
 5. **Agent 权限很小**：AI 相关代码本身也被策略约束。
-6. **计划包终态明确**：`docs/plan/*` 已经 `PACK_COMPLETE`，不容易误续旧任务。
+6. **计划控制面明确**：`docs/plan/README.md` 指向当前 active pack，历史 pack 以 `PACK_COMPLETE` 保持终态，不容易误续旧任务。
 
 ### 7.4 当前对 AI coder 的主要风险
 
-1. **缺少可执行架构边界检查**：AI 可能引入不当 import。
-2. **缺少模块级 README / ownership**：新 AI 需要从多个文件推断模块职责。
-3. **没有 lint/build/db check 脚本**：当前只有 `npm test` 和 `typecheck`。
-4. **测试串联在一个 npm script**：小项目可接受，变大后定位失败会变慢。
-5. **SQL migration 与 Zod schema 没有自动一致性测试**：未来字段漂移风险会增加。
+1. **边界检查仍是轻量脚本**：已有 `check:boundaries`，但不是完整 lint / CODEOWNERS / dependency-cruiser 治理。
+2. **runtime foundation 容易被过度解读**：已有 `/events`、raw-event PostgreSQL repo 和 worker seams，但 production deployment/auth/observability/queue reliability 仍未完成。
+3. **worker 仍是 contract-only**：projection/snapshot/benchmark/evidence workers 只是 ownership descriptors，不是可执行 production workers。
+4. **测试串联在一个 npm script**：小项目可接受，变大后定位失败会变慢；runtime/DB gates 需按修改面额外运行。
+5. **SQL migration 与 Zod schema 只有 smoke + DB gate 覆盖**：已有 `check:schema-migrations` 和 `test:db:migrations`，但未来字段漂移仍需要更强 contract tests。
 6. **`.pi` runtime 尚未实装**：skill/prompt 和真实 agent execution 的契约未被端到端验证。
 
 ---
 
 ## 8. Vibe Coding 适配性改进建议
 
-这些建议已由 `data-dyna-vibecoding-guardrails` 计划包转化为本地 guardrails；未实现生产 runtime、真实 DB 执行、真实 Agent runtime 或外部 producer 集成的部分仍明确标为 residual / future plan。
+这些建议已由 `data-dyna-vibecoding-guardrails` 与 `data-dyna-production-runtime-foundation` 计划包部分转化为本地 guardrails 和 minimal runtime foundation；未实现 production deployment/auth/observability、durable worker reliability、真实 Agent runtime 或外部 producer 集成的部分仍明确标为 residual / future plan。
 
 ### 8.1 增加架构边界检查
 
@@ -743,13 +758,15 @@ Validation:
 
 它是 schema/migration safety smoke check，不替代真实数据库迁移执行、SQL engine validation 或 DB integration tests。
 
-### 8.6 生产化前增加 service/worker adapter 层
+### 8.6 已增加 minimal service/worker adapter foundation；生产化仍需 hardening plan
 
-当前 seam contract 已落到 `src/app/README.md`。它只定义未来生产 adapter 放置位置和边界，不实现可运行 HTTP server、PostgreSQL repository、queue worker、runtime config 或 observability stack。
-
-未来生产计划应在外层新增：
+当前 seam contract 已落到 `src/app/README.md`，并已有最小 implementation：
 
 ```text
+src/app/config/runtime-config.ts
+src/app/config/postgres-test-config.ts
+src/app/app.ts
+src/app/server.ts
 src/app/http/events-route.ts
 src/app/repositories/postgres-raw-event-repository.ts
 src/app/workers/projection-worker.ts
@@ -758,12 +775,27 @@ src/app/workers/benchmark-worker.ts
 src/app/workers/evidence-worker.ts
 ```
 
+已完成范围：
+
+- local/test Fastify app construction and `/healthz`；
+- `/events` and `/events/batch` route adapters using deterministic ingestion handlers；
+- local PostgreSQL-backed raw-event repository and runtime integration tests；
+- contract-only worker ownership descriptors and explicit residuals。
+
+未来 production hardening plan 仍应新增或补齐：
+
+- production DB lifecycle, pooling, secrets, rollout/rollback, and backup/restore ownership；
+- auth/tenancy/rate limit/gateway policy；
+- durable worker queue, retry/checkpoint/dead-letter semantics, and scheduler ownership；
+- observability, incident response, SLO/runbook hooks；
+- external producer instrumentation and real traffic contracts。
+
 原则：
 
 - adapter 负责 I/O、事务、重试、日志、调度和 repository 调用；
 - core module 继续保持 deterministic pure functions；
 - 不把 DB client、HTTP framework object、queue client 或 runtime config 塞进当前 deterministic modules；
-- 不声明生产 runtime 已完成，真实 API/worker/DB ownership 和 integration tests 仍需独立 production plan。
+- 不声明 production deployment、Agent runtime、external producer integration 或 mature observability 已完成。
 
 ---
 
@@ -813,7 +845,9 @@ AI coder 不得在没有新计划和人类确认的情况下：
 | agent/validator/tools | `npm run test:agent`; `npm run typecheck`; confirm no mutation tools |
 | merchant-review | `npm run test:review`; `npm run typecheck`; manually inspect lifecycle safety |
 | evidence | `npm run test:evidence`; `npm run typecheck`; manually inspect verdict/evidence safety |
-| migrations | `npm run check:schema-migrations`; `git diff --check`; SQL review; DB migration execution remains future production validation |
+| migrations | `npm run check:schema-migrations`; `npm run test:db:migrations`; `git diff --check`; SQL review |
+| app/runtime adapter | `npm run check:boundaries`; `npm run test:db:migrations`; `npm run test:app:repository`; `npm run test:runtime`; `npm run typecheck`; `git diff --check` |
+| app worker seams | `npm run check:boundaries`; `npm run test:app:workers`; `npm run typecheck`; `git diff --check` |
 
 ---
 
@@ -822,7 +856,7 @@ AI coder 不得在没有新计划和人类确认的情况下：
 | 业务目标 | 当前完成度 | 说明 |
 |---|---:|---|
 | 建立统一事件合同 | 已完成 MVP | `event-contract.v1` 覆盖小程序、POS、mobile-hq、Datamesh/system。 |
-| 接收并审计事件 | 已完成本地 MVP | handler + raw/invalid store；生产 API/DB repo 待实现。 |
+| 接收并审计事件 | 已完成 minimal runtime foundation | handler + in-memory store + Fastify `/events`/`/events/batch` adapter + PostgreSQL raw-event repository；production auth/deployment/observability 待实现。 |
 | 形成可信业务事实 | 已完成本地 MVP | projection 支持 orders/carts/members/RFM/merchant actions。 |
 | 独立咖啡店画像和指标 | 已完成 MVP | 四个核心指标 + deterministic segment candidate。 |
 | 同类门店 benchmark | 已完成 MVP | aggregate-only + sample threshold + directional gap。 |
@@ -831,6 +865,7 @@ AI coder 不得在没有新计划和人类确认的情况下：
 | 确定性 validator | 已完成 MVP | safety/evidence/sample/guardrail checks。 |
 | 商户审核与采纳生命周期 | 已完成 MVP | review、decision、lifecycle、preference confirmation schema/function。 |
 | 实验效果和证据闭环 | 已完成 MVP | effect、guardrail、trajectory、evidence record。 |
+| 本地/CI runtime integration gate | 已完成 minimal foundation | local PostgreSQL migration gate、repository gate、runtime route gate 已存在；production rollout/rollback 仍未实现。 |
 | 生产部署和真实集成 | 未完成 | 需新计划。 |
 | 真实 Pi SDK/provider runtime | 未完成 | 当前是 fixture/adapter boundary。 |
 
@@ -840,18 +875,17 @@ AI coder 不得在没有新计划和人类确认的情况下：
 
 如果继续推进，建议不要在旧 `PACK_COMPLETE` 计划上续写，而是新建 plan，按以下优先级选择一个：
 
-### Option A：Production API / Worker Foundation
+### Option A：Production Runtime Hardening
 
-目标：把当前 pure functions 包装成可运行服务。
+目标：把当前 minimal runtime foundation 变成可部署、可观测、可回滚的生产服务。
 
 交付：
 
-- `/events` / `/events/batch` HTTP route；
-- PostgreSQL repositories；
-- migration check；
-- projection/snapshot/benchmark/evidence worker；
-- idempotency / retry / logging；
-- minimal OpenTelemetry hooks。
+- production DB connection lifecycle, pooling, secrets, backup/restore, and rollout/rollback；
+- auth/tenancy/rate-limit/gateway policy for `/events` and `/events/batch`；
+- executable projection/snapshot/benchmark/evidence workers with owned repositories；
+- durable queue, retry/checkpoint/dead-letter semantics, scheduler, and incident handling；
+- production observability hooks, SLO/runbook, and deployment validation。
 
 ### Option B：AI Runtime Integration
 
@@ -878,17 +912,16 @@ AI coder 不得在没有新计划和人类确认的情况下：
 - mini-program attribution event mapping；
 - 不改外部 repo 前先建跨 repo workset。
 
-### Option D：Vibe Coding Guardrail Pack
+### Option D：Vibe Coding Guardrail Extension
 
-目标：把本文建议变成可执行约束。
+目标：在已完成的 local guardrails 上继续增强治理。
 
 交付：
 
-- `check:boundaries`；
-- split test scripts；
-- module README 模板；
-- CODEOWNERS / review policy；
-- migration/schema safety checks。
+- ESLint/dependency-cruiser or CI import matrix beyond current `check:boundaries`；
+- CODEOWNERS when real owner handles exist；
+- stronger schema / TypeScript / SQL drift checks；
+- dashboard/runbook for AI coder validation lanes。
 
 ---
 
@@ -911,9 +944,9 @@ Event Contract -> Data Core -> Opportunity Gap -> Agent Draft -> Validator -> Me
 最需要补强的工程资产是：
 
 ```text
-可执行边界检查、生产 API/worker adapter、真实 DB integration、真实 Pi runtime、CI / lint / ownership guardrails。
+production deployment/auth/observability、durable executable workers、真实 Pi runtime、external producer instrumentation、CI / lint / ownership guardrail extension。
 ```
 
 因此，当前项目的正确定位是：
 
-> 已完成业务闭环和安全边界的本地 MVP foundation；非常适合 AI coder 在明确模块内继续扩展；但在进入真实商户和生产环境前，必须先补齐可执行架构 guardrail、API/worker/DB adapter、隐私治理和运行时观测。
+> 已完成业务闭环、安全边界、本地/CI DB gate 和 minimal runtime foundation；非常适合 AI coder 在明确模块内继续扩展；但在进入真实商户和生产环境前，必须先补齐 production deployment/auth/observability、durable worker reliability、真实 Agent runtime、external producer instrumentation 和隐私治理。

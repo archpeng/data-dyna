@@ -2,51 +2,39 @@
 
 ## Stage Order
 
-- [ ] `DD-RUNTIME-S1` framework/runtime decision
-- [ ] `DD-RUNTIME-S2` app config and server skeleton
-- [ ] `DD-RUNTIME-S3` PostgreSQL raw event repository
-- [ ] `DD-RUNTIME-S4` `/events` HTTP adapter
-- [ ] `DD-RUNTIME-S5` minimal worker foundation
-- [ ] `DD-RUNTIME-S6` runtime integration test gate
-- [ ] `DD-RUNTIME-CLOSEOUT-S1` production runtime foundation audit
+- [x] `DD-RUNTIME-S1` framework/runtime decision
+- [x] `DD-RUNTIME-S2` app config and server skeleton
+- [x] `DD-RUNTIME-S3` PostgreSQL raw event repository
+- [x] `DD-RUNTIME-S4` `/events` HTTP adapter
+- [x] `DD-RUNTIME-S5` minimal worker foundation
+- [x] `DD-RUNTIME-S6` runtime integration test gate
+- [x] `DD-RUNTIME-CLOSEOUT-S1` production runtime foundation audit
 
 ## Active Stage
 
-### `DD-RUNTIME-S1`
+### `PACK_COMPLETE`
 
-- Owner: `execute-plan`
-- State: `READY`
-- Priority: `highest`
+- Owner: `closeout`
+- State: `DONE`
+- Priority: `terminal`
 
 目标：
 
-- Make the Fastify vs NestJS decision explicit before adding runtime dependencies or framework-specific code.
+- close the pack through the repo-local closeout prompt surface
 
 必须交付：
 
-1. Short decision doc, for example `docs/runtime-foundation-decision.md`, comparing Fastify and NestJS for current repo needs.
-2. Chosen framework, DB client, and worker mode recorded with rationale.
-3. Package dependency plan that distinguishes runtime dependencies from dev/test dependencies.
-4. Updated `src/app/README.md` pointer if the decision changes adapter expectations.
-
-done_when:
-
-1. The repo records one chosen HTTP framework and why it fits the current minimal runtime foundation.
-2. The decision explicitly states whether worker foundation uses a simple script/runner, cron-style entrypoint, or queue, and what remains deferred.
-3. The decision does not claim full production deployment, Agent runtime, auth, or observability is complete.
-4. `git diff --check`, `npm run check:boundaries`, `npm run check:schema-migrations`, and `npm run typecheck` pass.
-
-stop_boundary:
-
-1. Stop if choosing Fastify vs NestJS requires unprovided production non-functional requirements.
-2. Stop before adding runtime dependencies without a recorded decision.
-3. Stop if the decision would require moving deterministic Core functions into `src/app`.
+1. final closeout summary and residual handoff
 
 必须避免：
 
-1. Do not silently pick a framework without tradeoff notes.
-2. Do not overbuild a framework module system beyond `/events` and minimal worker foundation.
-3. Do not start Agent runtime integration in this decision slice.
+1. dispatching another execute/review phase from terminal parser truth
+## Accepted Review Evidence for `DD-RUNTIME-CLOSEOUT-S1`
+
+- Audited `DD-RUNTIME-S1` through `DD-RUNTIME-S6` evidence across the runtime decision doc, Fastify app skeleton, PostgreSQL repository, `/events` adapter, contract-only worker foundation, runtime integration tests, and validation docs.
+- Updated `docs/current-architecture-and-vibecoding-review.md` from future-only runtime recommendations to current minimal runtime foundation status while keeping production hardening residuals explicit.
+- Preserved residuals for production deployment, auth/tenancy, observability, durable worker reliability, Agent runtime, external producer instrumentation, production DB lifecycle, and queue hardening.
+- Terminal writeback marked all runtime stages done and this pack `PACK_COMPLETE` only after validation and parser checks passed.
 
 ## Slice Ownership
 
@@ -150,7 +138,7 @@ The DB gate closeout briefly caused this successor pack to be marked `PACK_COMPL
 
 Repair invariant:
 
-- Active runtime truth is `DD-RUNTIME-S1` / `execute-plan` / `READY` until accepted review advances it.
+- Accepted `DD-RUNTIME-CLOSEOUT-S1` review advanced active runtime truth to `PACK_COMPLETE` / `closeout` / `DONE`; do not regress it to runtime slices unless a future replan explicitly reopens this pack.
 - `PACK_COMPLETE` is illegal for this pack while any Stage Order item remains unchecked.
 - `npm run check:plan` must pass after every future README/STATUS/WORKSET writeback.
 - Ordinary accepted runtime slices report `completed`; only full objective closeout reports `done`.
@@ -178,6 +166,7 @@ npm run check:boundaries
 npm run check:schema-migrations
 npm run test:db:migrations
 npm run test:runtime
+npm run test:app:repository
 npm test
 npm run typecheck
 git diff --check
@@ -212,14 +201,23 @@ Known out-of-scope residuals for this pack:
 
 ## Machine Queue
 
-- active_step: `DD-RUNTIME-S1`
-- latest_completed_step: `NONE`
-- intended_handoff: `execute-plan`
-- activation_condition: `Satisfied: data-dyna-db-migration-execution-gate reached PACK_COMPLETE with accepted local/CI PostgreSQL migration evidence.`
-- latest_planning_summary: Repaired parser truth after DB gate closeout; runtime foundation is active at `DD-RUNTIME-S1`, not `PACK_COMPLETE`.
+- active_step: `PACK_COMPLETE`
+- latest_completed_step: `PACK_COMPLETE`
+- intended_handoff: `autopilot-closeout`
+- latest_closeout_summary: Closed data-dyna-production-runtime-foundation at PACK_COMPLETE.
 - latest_verification:
-  - `DB gate closeout passed before commit 5de1b64: npm run db:test:reset, npm run check:schema-migrations, npm run test:db:migrations, npm run check:boundaries, npm test, npm run typecheck, and git diff --check.`
-  - `Commit and push succeeded for the completed DB gate: origin/main advanced 8d660bb..5de1b64.`
-  - `Runtime PLAN/STATUS/WORKSET define seven proof-carrying stages plus terminal PACK_COMPLETE.`
-  - `Current parser truth was repaired so README, STATUS, and WORKSET all name DD-RUNTIME-S1 with intended handoff execute-plan.`
-  - `Autopilot parser invariant is now enforced by npm run check:plan.`
+  - `plan_sync docs/plan reports data-dyna-production-runtime-foundation STATUS and WORKSET as 7 done / 0 pending; completed prerequisite packs remain 0 pending.`
+  - `Closeout recheck passed: npm run check:plan and git diff --check.`
+  - `Review validation already gathered: npm run db:test:up; npm run test:db:migrations; npm run test:app:repository; npm run test:runtime; npm run test:app:workers; npm run check:boundaries; npm run check:schema-migrations; npm run typecheck; npm test; closeout proof probe.`
+  - `workspace_scan: data-dyna on main, remote https://github.com/archpeng/data-dyna.git, 18 dirty files pending persistence.`
+  - `docs/plan/README.md`
+  - `docs/plan/data-dyna-production-runtime-foundation_STATUS.md`
+  - `docs/plan/data-dyna-production-runtime-foundation_WORKSET.md`
+  - `docs/current-architecture-and-vibecoding-review.md`
+  - `docs/runtime-foundation-decision.md`
+  - `src/app/**`
+  - `tests/app-runtime-s2.spec.ts`
+  - `tests/postgres-raw-event-repository.spec.ts`
+  - `tests/app-runtime-s4.spec.ts`
+  - `tests/app-workers-s5.spec.ts`
+- terminal: `true`
