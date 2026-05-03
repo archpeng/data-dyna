@@ -12,23 +12,42 @@
 
 ## Active Stage
 
-### `PACK_COMPLETE`
+### `DD-RUNTIME-S1`
 
-- Owner: `closeout`
-- State: `DONE`
-- Priority: `terminal`
+- Owner: `execute-plan`
+- State: `READY`
+- Priority: `highest`
 
 目标：
 
-- close the pack through the repo-local closeout prompt surface
+- Make the Fastify vs NestJS decision explicit before adding runtime dependencies or framework-specific code.
 
 必须交付：
 
-1. final closeout summary and residual handoff
+1. Short decision doc, for example `docs/runtime-foundation-decision.md`, comparing Fastify and NestJS for current repo needs.
+2. Chosen framework, DB client, and worker mode recorded with rationale.
+3. Package dependency plan that distinguishes runtime dependencies from dev/test dependencies.
+4. Updated `src/app/README.md` pointer if the decision changes adapter expectations.
+
+done_when:
+
+1. The repo records one chosen HTTP framework and why it fits the current minimal runtime foundation.
+2. The decision explicitly states whether worker foundation uses a simple script/runner, cron-style entrypoint, or queue, and what remains deferred.
+3. The decision does not claim full production deployment, Agent runtime, auth, or observability is complete.
+4. `git diff --check`, `npm run check:boundaries`, `npm run check:schema-migrations`, and `npm run typecheck` pass.
+
+stop_boundary:
+
+1. Stop if choosing Fastify vs NestJS requires unprovided production non-functional requirements.
+2. Stop before adding runtime dependencies without a recorded decision.
+3. Stop if the decision would require moving deterministic Core functions into `src/app`.
 
 必须避免：
 
-1. dispatching another execute/review phase from terminal parser truth
+1. Do not silently pick a framework without tradeoff notes.
+2. Do not overbuild a framework module system beyond `/events` and minimal worker foundation.
+3. Do not start Agent runtime integration in this decision slice.
+
 ## Slice Ownership
 
 ### `DD-RUNTIME-S1`
@@ -123,7 +142,18 @@
 | 7 | `DD-RUNTIME-CLOSEOUT-S1` | `review -> accepted-writeback` | activate `PACK_COMPLETE` only if runtime foundation is audited |
 | terminal | `PACK_COMPLETE` | `closeout` | repo-local closeout prompt surface |
 
-`currentWave/maxWaves` or any scheduler wave count is not objective-completion proof; only parser truth `PACK_COMPLETE` can permit closeout.
+`currentWave/maxWaves` or any scheduler wave count is not objective-completion proof; only parser truth and accepted review evidence can permit terminal closeout.
+
+## Parser Drift Repair and Root Cause
+
+The DB gate closeout briefly caused this successor pack to be marked `PACK_COMPLETE` while its Stage Order still had seven unchecked runtime stages. The root issue was a parser-state writeback hazard: terminal closeout metadata from the completed prerequisite pack was applied after `docs/plan/README.md` had already activated this successor pack. That made the scheduler see `PACK_COMPLETE` for the runtime pack and stop instead of dispatching `DD-RUNTIME-S1`.
+
+Repair invariant:
+
+- Active runtime truth is `DD-RUNTIME-S1` / `execute-plan` / `READY` until accepted review advances it.
+- `PACK_COMPLETE` is illegal for this pack while any Stage Order item remains unchecked.
+- `npm run check:plan` must pass after every future README/STATUS/WORKSET writeback.
+- Ordinary accepted runtime slices report `completed`; only full objective closeout reports `done`.
 
 ## Hard Closeout Guard
 
@@ -136,11 +166,14 @@ State: DONE
 Remaining non-deferred stages: none
 ```
 
+If `PACK_COMPLETE` is present while any runtime stage remains unchecked, route `replan` and repair parser truth before continuing.
+
 ## Expected Verification
 
 General validation escalation as commands become available:
 
 ```bash
+npm run check:plan
 npm run check:boundaries
 npm run check:schema-migrations
 npm run test:db:migrations
@@ -159,10 +192,10 @@ find docs/plan -maxdepth 1 -type f -name '*.md' -print | sort
 
 ## Execution Notes
 
-- This pack is active because `data-dyna-db-migration-execution-gate` reached `PACK_COMPLETE` with accepted local/CI PostgreSQL migration evidence.
+- This pack is active because `data-dyna-db-migration-execution-gate` reached `PACK_COMPLETE` with accepted local/CI PostgreSQL migration evidence and commit `5de1b64` was pushed.
 - The active stage ID is the `stepId` for active-slice `autopilot_report` calls after activation.
 - `execute/completed` routes to `execution-reality-audit`, not terminal completion.
-- Accepted review is the only normal point where `STATUS` / `WORKSET` should advance to the next stage.
+- Accepted review is the only normal point where `README` / `STATUS` / `WORKSET` should advance to the next stage.
 - If a runtime slice requires Agent runtime, external producer integration, or production deployment ownership, route `needs_replan` rather than expanding scope.
 - Do not weaken existing vibe-coding guardrails to make runtime implementation easier.
 
@@ -179,25 +212,14 @@ Known out-of-scope residuals for this pack:
 
 ## Machine Queue
 
-- active_step: `PACK_COMPLETE`
-- latest_completed_step: `DD-DB-GATE-CLOSEOUT-S1`
-- intended_handoff: `autopilot-closeout`
-- latest_closeout_summary: Completed DB gate closeout and activated the runtime foundation pack.
+- active_step: `DD-RUNTIME-S1`
+- latest_completed_step: `NONE`
+- intended_handoff: `execute-plan`
+- activation_condition: `Satisfied: data-dyna-db-migration-execution-gate reached PACK_COMPLETE with accepted local/CI PostgreSQL migration evidence.`
+- latest_planning_summary: Repaired parser truth after DB gate closeout; runtime foundation is active at `DD-RUNTIME-S1`, not `PACK_COMPLETE`.
 - latest_verification:
-  - `Closeout content audit confirmed local/CI-only PostgreSQL conventions, required package scripts, GitHub Actions PostgreSQL service, visible CI command order, and no workflow `secrets.*` references.`
-  - `Validation passed: `npm run db:test:reset`, `npm run check:schema-migrations`, `npm run test:db:migrations`, `npm run check:boundaries`, `npm test`, `npm run typecheck`, and `git diff --check`.`
-  - ``npm run test:db:migrations` applied 7 migrations, verified 33 expected tables, and proved required CHECK/catalog constraints in PostgreSQL.`
-  - `Parser consistency check passed: DB gate STATUS/WORKSET are `PACK_COMPLETE` / `closeout` / `DONE`; README and runtime STATUS/WORKSET now activate `DD-RUNTIME-S1` / `execute-plan` / `READY`.`
-  - ``plan_sync /home/peng/dt-git/github/data-dyna/docs/plan` reports DB gate STATUS/WORKSET 5 done / 0 pending and runtime foundation STATUS/WORKSET 0 done / 7 pending.`
-  - `docs/plan/README.md`
-  - `docs/plan/data-dyna-db-migration-execution-gate_PLAN.md`
-  - `docs/plan/data-dyna-db-migration-execution-gate_STATUS.md`
-  - `docs/plan/data-dyna-db-migration-execution-gate_WORKSET.md`
-  - `docs/plan/data-dyna-production-runtime-foundation_PLAN.md`
-  - `docs/plan/data-dyna-production-runtime-foundation_STATUS.md`
-  - `docs/plan/data-dyna-production-runtime-foundation_WORKSET.md`
-  - `.github/workflows/db-migration-gate.yml`
-  - `docs/local-postgres.md`
-  - `scripts/run-migrations.mjs`
-  - `scripts/check-db-migrations.mjs`
-- terminal: `true`
+  - `DB gate closeout passed before commit 5de1b64: npm run db:test:reset, npm run check:schema-migrations, npm run test:db:migrations, npm run check:boundaries, npm test, npm run typecheck, and git diff --check.`
+  - `Commit and push succeeded for the completed DB gate: origin/main advanced 8d660bb..5de1b64.`
+  - `Runtime PLAN/STATUS/WORKSET define seven proof-carrying stages plus terminal PACK_COMPLETE.`
+  - `Current parser truth was repaired so README, STATUS, and WORKSET all name DD-RUNTIME-S1 with intended handoff execute-plan.`
+  - `Autopilot parser invariant is now enforced by npm run check:plan.`

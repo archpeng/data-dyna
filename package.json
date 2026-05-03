@@ -13,6 +13,7 @@
     "test:evidence": "tsx tests/evidence-dd-p5-s1.spec.ts",
     "check:boundaries": "node scripts/check-boundaries.mjs",
     "check:schema-migrations": "node scripts/check-schema-migration-safety.mjs",
+    "check:plan": "node scripts/check-plan-control-plane.mjs",
     "typecheck": "tsc --noEmit",
     "db:test:up": "docker compose up -d postgres",
     "db:test:down": "docker compose down",
