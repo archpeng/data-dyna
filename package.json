@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Deterministic Data Core and Evidence Service foundation for independent cafés.",
   "scripts": {
-    "test": "tsx tests/event-contract.spec.ts && tsx tests/ingestion-handlers.spec.ts && tsx tests/projections-dd-p1-s1.spec.ts && tsx tests/snapshots-dd-p1-s2.spec.ts && tsx tests/benchmarks-dd-p2-s1.spec.ts && tsx tests/agent-dd-p3-s1.spec.ts && tsx tests/agent-dd-p3-s2.spec.ts && tsx tests/merchant-review-dd-p4-s1.spec.ts && tsx tests/evidence-dd-p5-s1.spec.ts && tsx tests/app-runtime-s2.spec.ts && tsx tests/app-workers-s5.spec.ts",
+    "test": "tsx tests/event-contract.spec.ts && tsx tests/ingestion-handlers.spec.ts && tsx tests/projections-dd-p1-s1.spec.ts && tsx tests/snapshots-dd-p1-s2.spec.ts && tsx tests/benchmarks-dd-p2-s1.spec.ts && tsx tests/agent-dd-p3-s1.spec.ts && tsx tests/agent-dd-p3-s2.spec.ts && tsx tests/merchant-review-dd-p4-s1.spec.ts && tsx tests/evidence-dd-p5-s1.spec.ts && tsx tests/app-runtime-s2.spec.ts && tsx tests/app-observability-s2.spec.ts && tsx tests/app-observability-s3.spec.ts && tsx scripts/probe-runtime-observability.ts && tsx tests/app-workers-s5.spec.ts",
     "test:contracts": "tsx tests/event-contract.spec.ts",
     "test:core": "tsx tests/ingestion-handlers.spec.ts && tsx tests/projections-dd-p1-s1.spec.ts && tsx tests/snapshots-dd-p1-s2.spec.ts && tsx tests/benchmarks-dd-p2-s1.spec.ts",
     "test:agent": "tsx tests/agent-dd-p3-s1.spec.ts && tsx tests/agent-dd-p3-s2.spec.ts",
@@ -19,7 +19,8 @@
     "app:dev": "tsx src/app/server.ts",
     "docker:build": "docker build -t data-dyna:testable-runtime .",
     "smoke:runtime": "node scripts/smoke-runtime.mjs",
-    "test:runtime": "tsx tests/app-runtime-s4.spec.ts",
+    "probe:observability": "tsx scripts/probe-runtime-observability.ts",
+    "test:runtime": "tsx tests/app-observability-s2.spec.ts && tsx tests/app-observability-s3.spec.ts && tsx scripts/probe-runtime-observability.ts && tsx tests/app-runtime-s4.spec.ts",
     "test:app:repository": "tsx tests/postgres-raw-event-repository.spec.ts",
     "test:app:workers": "tsx tests/app-workers-s5.spec.ts",
     "db:test:up": "docker compose up -d postgres",

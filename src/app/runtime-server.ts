@@ -10,6 +10,8 @@ import {
   PostgresRawEventRepository,
   type PostgresRawEventClient,
 } from "./repositories/postgres-raw-event-repository.ts";
+import type { RuntimeLogSink } from "./observability/runtime-log.ts";
+import type { RuntimeMetricSink } from "./observability/runtime-metrics.ts";
 
 const require = createRequire(import.meta.url);
 
@@ -24,6 +26,8 @@ const { Pool } = require("pg") as {
 export type DataDynaRuntimeServerOptions = {
   config?: RuntimeConfig;
   logger?: FastifyServerOptions["logger"];
+  observabilityLogSink?: RuntimeLogSink;
+  observabilityMetricSink?: RuntimeMetricSink;
 };
 
 export function buildDataDynaRuntimeServer(options: DataDynaRuntimeServerOptions = {}): FastifyInstance {
@@ -37,6 +41,8 @@ export function buildDataDynaRuntimeServer(options: DataDynaRuntimeServerOptions
     config,
     logger: options.logger ?? true,
     rawEventStore: new PostgresRawEventRepository(pool),
+    observabilityLogSink: options.observabilityLogSink,
+    observabilityMetricSink: options.observabilityMetricSink,
   });
 
   app.addHook("onClose", async () => {

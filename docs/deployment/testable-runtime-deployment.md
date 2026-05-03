@@ -119,11 +119,24 @@ The smoke gate checks:
 - authorized invalid payload returns `400` and persists invalid-event audit context;
 - authorized `POST /events/batch` accepts a tenant-scoped valid item.
 
-## 5. Run the local validation ladder
+## 5. Inspect P3 local/test observability outputs
+
+The Docker smoke gate proves real HTTP and PostgreSQL behavior. The current P3 log and metric sinks are intentionally in-process/local-test surfaces, so inspect them with the targeted observability probe instead of requiring a cloud backend or production dashboard:
+
+```bash
+npm run probe:observability
+```
+
+The probe uses placeholder credentials, `InMemoryRuntimeLogSink`, `InMemoryRuntimeMetricSink`, and `InMemoryRawEventStore`. Its sanitized summary answers whether local/test requests are healthy, unauthorized, accepted, duplicate, invalid, tenant-policy rejected, and covered by duration observations. It must not print bearer tokens, credential JSON, idempotency keys, raw payload secrets, merchant/store identifiers, event ids, or request run ids.
+
+Use `npm run test:runtime` for the full local observability regression ladder, including structured-log and metric redaction tests. Use `npm run smoke:runtime` for HTTP/PostgreSQL side-effect proof only; the smoke script does not expose the in-memory observability sinks from the running container.
+
+## 6. Run the local validation ladder
 
 After the Docker smoke path passes, keep the deterministic gates green:
 
 ```bash
+npm run probe:observability
 npm run test:runtime
 npm run typecheck
 npm test
@@ -135,7 +148,7 @@ git diff --check
 
 `npm run test:db:migrations`, `npm run docker:build`, and `npm run smoke:runtime` are part of the executable path above.
 
-## 6. Stop and clean up
+## 7. Stop and clean up
 
 Stop only the runtime container:
 
@@ -168,14 +181,14 @@ npm run db:test:reset
 
 ## Explicit residuals
 
-This P2-lite path leaves the following work open for successor packs:
+This P1/P2/P3 local-test path leaves the following work open for successor packs:
 
-- Production-readiness master tracker writeback and P3 successor-pack creation after P2 closeout is persisted.
-- P3 structured logs, metrics, traces, alerts, dashboards, and incident/runbook maturity.
+- Production-readiness master tracker writeback and P4 successor-pack creation after P3 closeout is persisted.
+- Production traces, cloud observability backend selection, dashboards, paging rules, mature SLOs, and incident-management maturity.
 - P4 real POS, miniapp, mobile-hq, or backend producer instrumentation.
 - P5 durable worker queue, retries, checkpoints, dead letters, and idempotent background processing.
 - P6 full Agent runtime, real Pi provider integration, and production Agent governance.
 - Full IAM/OAuth/SSO/admin UI/self-service merchant permissions.
 - Cloud production deployment, rollout/rollback, backup/restore, production database lifecycle, and secret management.
 
-The recommended roadmap order remains P2 auth/tenancy before real producer traffic, then P3 observability before wider runtime expansion.
+The recommended roadmap order remains P2 auth/tenancy before real producer traffic, then P3 observability before wider runtime expansion, then P4 producer integration.

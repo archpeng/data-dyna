@@ -2,13 +2,13 @@
 
 ## Active Pack
 
-- `docs/plan/data-dyna-observability-foundation_PLAN.md`
-- `docs/plan/data-dyna-observability-foundation_STATUS.md`
-- `docs/plan/data-dyna-observability-foundation_WORKSET.md`
+- `docs/plan/data-dyna-external-producer-integration_PLAN.md`
+- `docs/plan/data-dyna-external-producer-integration_STATUS.md`
+- `docs/plan/data-dyna-external-producer-integration_WORKSET.md`
 
 ## Current Active Slice
 
-- `DD-P3-S1`
+- `DD-P4-S1`
 ## Intended Handoff
 
 - `execute-plan`
@@ -17,8 +17,8 @@
 - `docs/plan/data-dyna-production-readiness-master_PLAN.md`
 - `docs/plan/data-dyna-production-readiness-master_STATUS.md`
 - `docs/plan/data-dyna-production-readiness-master_WORKSET.md`
-- Master tracker note: lightweight P2-P6 sequence tracker; the active concrete pack is `data-dyna-observability-foundation`.
-- Activation note: `data-dyna-auth-tenancy-foundation` reached `PACK_COMPLETE`; master tracker writeback marked `DD-PR-MASTER-P2` done, activated `DD-PR-MASTER-P3`, and created `data-dyna-observability-foundation` as the concrete P3 observability pack with active slice `DD-P3-S1`.
+- Master tracker note: lightweight P2-P6 sequence tracker; the active concrete pack is `data-dyna-external-producer-integration`.
+- Activation note: `data-dyna-observability-foundation` reached `PACK_COMPLETE`; master tracker writeback marked `DD-PR-MASTER-P3` done, activated `DD-PR-MASTER-P4`, and created `data-dyna-external-producer-integration` as the concrete P4 external producer integration pack. The first active P4 slice is `DD-P4-S1` for POS order-paid producer contract and source mapping.
 
 ## Autopilot Transition Contract
 
@@ -58,6 +58,10 @@
 - `docs/plan/data-dyna-auth-tenancy-foundation_STATUS.md`
 - `docs/plan/data-dyna-auth-tenancy-foundation_WORKSET.md`
 - terminal state: `PACK_COMPLETE`, owner `closeout`, state `DONE`; P2-lite auth/tenancy closeout accepted credential, tenancy, idempotency, smoke, and residual evidence.
+- `docs/plan/data-dyna-observability-foundation_PLAN.md`
+- `docs/plan/data-dyna-observability-foundation_STATUS.md`
+- `docs/plan/data-dyna-observability-foundation_WORKSET.md`
+- terminal state: `PACK_COMPLETE`, owner `closeout`, state `DONE`; P3 observability closeout accepted redaction-safe structured logs, counters, query/runbook notes, targeted probe, and residual evidence.
 - Do not resume completed packs unless a future replan explicitly reopens them.
 
 ## Autopilot Parser Invariants
@@ -81,10 +85,11 @@ These invariants are the source-of-truth guard against the closeout drift that b
 
 - This is the single-root repo-local machine control plane for current `data-dyna` productionization planning.
 - Keep this README, the active `PLAN`, `STATUS`, and `WORKSET` aligned in the same writeback turn.
-- Active-slice phase reports should use `stepId = DD-P3-S1` while this active slice remains current.
-- `data-dyna-observability-foundation` is the active concrete P3 pack; `DD-P3-S1` starts with a contract/redaction map before runtime observability implementation.
+- Current active-slice phase reports should use `stepId = DD-P4-S1` while this parser state remains current.
+- `data-dyna-external-producer-integration` is active for P4 with POS order-paid as the first pilot producer path; `DD-P4-S1` should produce the producer contract and source mapping before implementation changes.
+- `data-dyna-observability-foundation` reached `PACK_COMPLETE`; `DD-P3-S1` accepted the contract/redaction map, `DD-P3-S2` accepted structured runtime logging/correlation, `DD-P3-S3` accepted bounded ingestion metrics/counters, `DD-P3-S4` accepted observability runbook, alert/query notes, and targeted probe coverage, and `DD-P3-CLOSEOUT-S1` accepted the P3 closeout audit before terminalization.
 - `data-dyna-auth-tenancy-foundation` reached `PACK_COMPLETE` after closeout audited the P2 auth/tenancy contract, schema/storage, runtime auth boundary, tenant-safe writes, smoke/runbook, and validation evidence.
-- `data-dyna-production-readiness-master` now marks P2 done and tracks P3 as the active concrete pack while preserving P4/P5/P6 order and boundary law without over-specifying late-stage implementation details.
+- `data-dyna-production-readiness-master` now marks `DD-PR-MASTER-P3` done and tracks `DD-PR-MASTER-P4` while preserving P4/P5/P6 order and boundary law without over-specifying late-stage implementation details.
 - `data-dyna-testable-runtime-deployment` reached `PACK_COMPLETE` after `DD-P1-CLOSEOUT-S1` audited Dockerfile, runtime DB wiring, smoke gate, runbook, validation evidence, and residual handoff.
 - `DD-P1-S4` review accepted the Docker/testable-runtime runbook and preflight evidence and advanced the pack to `DD-P1-CLOSEOUT-S1`.
 - `DD-P1-S3` review accepted the runtime smoke gate evidence and advanced the pack to `DD-P1-S4`.
