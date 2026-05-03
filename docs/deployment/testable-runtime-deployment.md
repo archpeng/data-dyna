@@ -129,6 +129,14 @@ npm run probe:observability
 
 The probe uses placeholder credentials, `InMemoryRuntimeLogSink`, `InMemoryRuntimeMetricSink`, and `InMemoryRawEventStore`. Its sanitized summary answers whether local/test requests are healthy, unauthorized, accepted, duplicate, invalid, tenant-policy rejected, and covered by duration observations. It must not print bearer tokens, credential JSON, idempotency keys, raw payload secrets, merchant/store identifiers, event ids, or request run ids.
 
+For the P4 POS producer pilot, run the producer-specific local/test probe:
+
+```bash
+npm run probe:pos-producer
+```
+
+That probe maps a sanitized POS order-paid fixture, delivers it through the injected `POST /events` transport, and prints safe counts for delivery outcomes, accepted raw-event rows, invalid-event reason codes, P3 log events, P3 metric counters, and replay/backfill handoff. It is a Data Dyna-side proof only: it uses placeholder credentials, in-memory stores/sinks, no production secrets, no real external POS runtime, no real network call by default, and no durable worker queue.
+
 Use `npm run test:runtime` for the full local observability regression ladder, including structured-log and metric redaction tests. Use `npm run smoke:runtime` for HTTP/PostgreSQL side-effect proof only; the smoke script does not expose the in-memory observability sinks from the running container.
 
 ## 6. Run the local validation ladder
@@ -137,6 +145,7 @@ After the Docker smoke path passes, keep the deterministic gates green:
 
 ```bash
 npm run probe:observability
+npm run probe:pos-producer
 npm run test:runtime
 npm run typecheck
 npm test
@@ -185,7 +194,7 @@ This P1/P2/P3 local-test path leaves the following work open for successor packs
 
 - Production-readiness master tracker writeback and P4 successor-pack creation after P3 closeout is persisted.
 - Production traces, cloud observability backend selection, dashboards, paging rules, mature SLOs, and incident-management maturity.
-- P4 real POS, miniapp, mobile-hq, or backend producer instrumentation.
+- P4 external POS repository/runtime hookup beyond the local/test POS order-paid probe, plus miniapp, mobile-hq, backend producer, or broader POS instrumentation.
 - P5 durable worker queue, retries, checkpoints, dead letters, and idempotent background processing.
 - P6 full Agent runtime, real Pi provider integration, and production Agent governance.
 - Full IAM/OAuth/SSO/admin UI/self-service merchant permissions.

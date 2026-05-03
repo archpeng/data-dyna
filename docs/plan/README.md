@@ -2,23 +2,25 @@
 
 ## Active Pack
 
-- `docs/plan/data-dyna-external-producer-integration_PLAN.md`
-- `docs/plan/data-dyna-external-producer-integration_STATUS.md`
-- `docs/plan/data-dyna-external-producer-integration_WORKSET.md`
+- `docs/plan/data-dyna-durable-worker-foundation_PLAN.md`
+- `docs/plan/data-dyna-durable-worker-foundation_STATUS.md`
+- `docs/plan/data-dyna-durable-worker-foundation_WORKSET.md`
 
 ## Current Active Slice
 
-- `DD-P4-S1`
+- `DD-P5-S1`
+
 ## Intended Handoff
 
 - `execute-plan`
+
 ## Queued Successor Pack
 
 - `docs/plan/data-dyna-production-readiness-master_PLAN.md`
 - `docs/plan/data-dyna-production-readiness-master_STATUS.md`
 - `docs/plan/data-dyna-production-readiness-master_WORKSET.md`
-- Master tracker note: lightweight P2-P6 sequence tracker; the active concrete pack is `data-dyna-external-producer-integration`.
-- Activation note: `data-dyna-observability-foundation` reached `PACK_COMPLETE`; master tracker writeback marked `DD-PR-MASTER-P3` done, activated `DD-PR-MASTER-P4`, and created `data-dyna-external-producer-integration` as the concrete P4 external producer integration pack. The first active P4 slice is `DD-P4-S1` for POS order-paid producer contract and source mapping.
+- Master tracker note: lightweight P2-P6 sequence tracker; `data-dyna-durable-worker-foundation` is the active concrete P5 pack after `data-dyna-external-producer-integration` reached `PACK_COMPLETE`.
+- Activation note: P4 closeout accepted the POS order-paid producer path and preserved P5/P6/production residuals. Master tracker writeback marked `DD-PR-MASTER-P4` done, activated `DD-PR-MASTER-P5`, and created `data-dyna-durable-worker-foundation` as the concrete P5 durable worker foundation pack. The first active P5 slice is `DD-P5-S1` for durable worker contract and execution-model decision.
 
 ## Autopilot Transition Contract
 
@@ -62,6 +64,10 @@
 - `docs/plan/data-dyna-observability-foundation_STATUS.md`
 - `docs/plan/data-dyna-observability-foundation_WORKSET.md`
 - terminal state: `PACK_COMPLETE`, owner `closeout`, state `DONE`; P3 observability closeout accepted redaction-safe structured logs, counters, query/runbook notes, targeted probe, and residual evidence.
+- `docs/plan/data-dyna-external-producer-integration_PLAN.md`
+- `docs/plan/data-dyna-external-producer-integration_STATUS.md`
+- `docs/plan/data-dyna-external-producer-integration_WORKSET.md`
+- terminal state: `PACK_COMPLETE`, owner `closeout`, state `DONE`; P4 external producer closeout accepted the POS order-paid contract, mapper, `/events` delivery proof, runbook/probe, replay/backfill handoff, and residual evidence.
 - Do not resume completed packs unless a future replan explicitly reopens them.
 
 ## Autopilot Parser Invariants
@@ -85,11 +91,12 @@ These invariants are the source-of-truth guard against the closeout drift that b
 
 - This is the single-root repo-local machine control plane for current `data-dyna` productionization planning.
 - Keep this README, the active `PLAN`, `STATUS`, and `WORKSET` aligned in the same writeback turn.
-- Current active-slice phase reports should use `stepId = DD-P4-S1` while this parser state remains current.
-- `data-dyna-external-producer-integration` is active for P4 with POS order-paid as the first pilot producer path; `DD-P4-S1` should produce the producer contract and source mapping before implementation changes.
+- Current active-slice phase reports should use `stepId = DD-P5-S1` while this parser state remains current.
+- `data-dyna-durable-worker-foundation` is active for P5 with `DD-P5-S1` ready to define the durable worker contract, execution model, OpenClaw/Pi-inspired handoff principles, and residual boundaries before schema or worker implementation.
+- `data-dyna-external-producer-integration` reached `PACK_COMPLETE` after `DD-P4-S1` accepted the producer contract and source mapping, `DD-P4-S2` accepted the mapper/fixture contract proof, `DD-P4-S3` accepted non-blocking producer delivery into `/events`, `DD-P4-S4` accepted the local/test runbook, observability, replay/backfill notes, and residual handoff, and `DD-P4-CLOSEOUT-S1` accepted the P4 closeout audit before terminalization.
 - `data-dyna-observability-foundation` reached `PACK_COMPLETE`; `DD-P3-S1` accepted the contract/redaction map, `DD-P3-S2` accepted structured runtime logging/correlation, `DD-P3-S3` accepted bounded ingestion metrics/counters, `DD-P3-S4` accepted observability runbook, alert/query notes, and targeted probe coverage, and `DD-P3-CLOSEOUT-S1` accepted the P3 closeout audit before terminalization.
 - `data-dyna-auth-tenancy-foundation` reached `PACK_COMPLETE` after closeout audited the P2 auth/tenancy contract, schema/storage, runtime auth boundary, tenant-safe writes, smoke/runbook, and validation evidence.
-- `data-dyna-production-readiness-master` now marks `DD-PR-MASTER-P3` done and tracks `DD-PR-MASTER-P4` while preserving P4/P5/P6 order and boundary law without over-specifying late-stage implementation details.
+- `data-dyna-production-readiness-master` now marks `DD-PR-MASTER-P4` done and tracks `DD-PR-MASTER-P5` while preserving P6 and production-operations residuals without over-specifying late-stage implementation details.
 - `data-dyna-testable-runtime-deployment` reached `PACK_COMPLETE` after `DD-P1-CLOSEOUT-S1` audited Dockerfile, runtime DB wiring, smoke gate, runbook, validation evidence, and residual handoff.
 - `DD-P1-S4` review accepted the Docker/testable-runtime runbook and preflight evidence and advanced the pack to `DD-P1-CLOSEOUT-S1`.
 - `DD-P1-S3` review accepted the runtime smoke gate evidence and advanced the pack to `DD-P1-S4`.

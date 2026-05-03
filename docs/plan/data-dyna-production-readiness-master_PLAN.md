@@ -4,7 +4,7 @@
 
 This lightweight master pack preserves the P2-P6 production-readiness sequence without over-specifying late-stage implementation details before earlier gates produce evidence.
 
-It is a roadmap tracker under the single repo-local `docs/plan/*` control plane. It does not replace the active concrete execution pack. The active concrete pack is `data-dyna-external-producer-integration`.
+It is a roadmap tracker under the single repo-local `docs/plan/*` control plane. It does not replace the active concrete execution pack. The active concrete pack is `data-dyna-durable-worker-foundation`.
 
 ## Source Truth
 
@@ -15,10 +15,14 @@ It is a roadmap tracker under the single repo-local `docs/plan/*` control plane.
 - `docs/plan/data-dyna-auth-tenancy-foundation_WORKSET.md`
 - `docs/plan/data-dyna-observability-foundation_STATUS.md`
 - `docs/plan/data-dyna-observability-foundation_WORKSET.md`
+- `docs/plan/data-dyna-external-producer-integration_STATUS.md`
+- `docs/plan/data-dyna-external-producer-integration_WORKSET.md`
+- `docs/integration/external-producer-contract.md`
 - `docs/observability/runtime-observability-foundation.md`
 - P1 closeout evidence from commit `6c11098 chore: add testable runtime deployment`
 - P2 closeout evidence from `data-dyna-auth-tenancy-foundation` `PACK_COMPLETE`
 - P3 closeout evidence from `data-dyna-observability-foundation` `PACK_COMPLETE`
+- P4 closeout evidence from `data-dyna-external-producer-integration` `PACK_COMPLETE`
 
 ## Current Baseline
 
@@ -28,14 +32,16 @@ P2-lite is complete: Bearer-token ingestion auth, tenant-safe event writes, tena
 
 P3 is complete: redaction-safe structured logs, bounded metrics/counters, local/test query notes, targeted observability probe, and residual handoff.
 
+P4 is complete: the POS `pos.order_paid` pilot producer path has accepted contract, mapper, authenticated `/events` delivery, non-blocking failure classification, runbook/probe, replay/backfill, and residual evidence.
+
 Remaining production-readiness work must keep these boundaries explicit:
 
 - P2 before real producer traffic: complete; do not reopen unless future regression evidence appears.
 - P3 before wider runtime expansion: complete; do not reopen unless future regression evidence appears.
-- P4 after P2/P3: active real POS, miniapp, mobile-hq, or backend producer integration gate, starting with one POS order-paid pilot path.
-- P5 after real event flow exists: durable worker queue, retries, checkpoints, dead letters, and idempotent background processing.
-- P6 last: Agent runtime integration with provider, validator, merchant review, audit, and no direct mutation authority.
-- Cloud production deployment hardening remains an explicit residual until a deployment target is selected.
+- P4 after P2/P3: complete for one POS order-paid pilot path; non-POS producers and external POS runtime hookup remain residual.
+- P5 after real event flow exists: active durable worker queue, retries, checkpoints, dead letters, idempotent background processing, and P6 handoff foundation.
+- P6 last: Agent runtime integration with provider, validator, merchant review, audit, and no direct mutation authority remains queued until P5 evidence exists.
+- Cloud production deployment hardening and production operations remain explicit residuals until a deployment/ops pack owns them.
 
 ## Master Stage Definitions
 
@@ -108,7 +114,7 @@ stop_boundary:
 #### `DD-PR-MASTER-P4` — create external producer integration pack after P2/P3
 
 - Owner: `plan-creator`
-- State: `READY`
+- State: `DONE`
 - Priority: `high`
 
 目标：
@@ -141,7 +147,7 @@ stop_boundary:
 #### `DD-PR-MASTER-P5` — create durable worker queue foundation pack after P4
 
 - Owner: `plan-creator`
-- State: `QUEUED`
+- State: `READY`
 - Priority: `high`
 
 目标：
