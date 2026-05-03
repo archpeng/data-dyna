@@ -244,7 +244,7 @@ Production ops residuals:
   - `README/STATUS/WORKSET readback confirms active slice PACK_COMPLETE and closeout/DONE terminal state.`
   - `npm test passed across event contract, ingestion, projections, snapshots, benchmarks, agent sidecar/tools/validator, merchant review, and evidence-store specs.`
   - `npm run typecheck passed via tsc --noEmit.`
-  - `git diff --check passed; git status remains dirty with the implementation pack uncommitted.`
+  - `git diff --check passed; git status clean.`
   - `docs/plan/README.md`
   - `docs/plan/data-dyna-autopilot_PLAN.md`
   - `docs/plan/data-dyna-autopilot_STATUS.md`
