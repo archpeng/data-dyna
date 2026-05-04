@@ -48,6 +48,31 @@ stop_boundary:
 1. Do not implement schema or worker code before the durable contract is accepted.
 2. Do not use OpenClaw/Pi inspiration to smuggle P6 runtime into P5.
 
+## Current Wave Plan
+
+- waveId: `wave-1`
+- parent_step: `DD-P5-S1`
+- selected_slice: `DD-P5-S1`
+- handoff_after_wave_plan: `execute-plan`
+- dominant_owner_boundary: docs-first durable worker contract; no schema, repository, executor, live Agent runtime, or production-operations implementation.
+
+Linear execution steps for `execute-plan`:
+
+1. Create `docs/workers/durable-worker-foundation.md` and anchor it to accepted P2 auth/tenancy, P3 observability, P4 POS producer/idempotency evidence, and current `src/app/workers/**` contract-only seams.
+2. Select the smallest locally verifiable durable execution model, expected PostgreSQL-backed job/checkpoint/dead-letter tables unless the contract documents a blocker and stops with reasons.
+3. Define durable job lifecycle and typed capabilities: enqueue, claim, heartbeat/checkpoint, complete, retry, and dead-letter; include attempt, checkpoint, watermark, error-classification, idempotency, and safe observability rules.
+4. Map the worker DAG from accepted `raw_events` to projections, snapshots, benchmarks, and evidence outputs, including where future app-layer repositories may read/write while deterministic Core remains free of `pg`, Fastify, queue clients, provider SDKs, and Agent runtime imports.
+5. Define the P6 handoff surface as tenant-scoped, bounded, read-only durable outputs plus freshness metadata and typed read capabilities; explicitly forbid arbitrary SQL, direct fact mutation, live Pi provider integration, model auth, Agent sessions, or LLM execution.
+6. Add a minimal pointer in `src/app/workers/README.md` only if needed for discoverability; do not change worker code, SQL migrations, repositories, executors, or tests in this contract-only slice.
+7. Validate with `npm run test:app:workers`, `npm run check:plan`, and `git diff --check`, then route same-slice `review` through `execution-reality-audit`.
+
+Exit criteria before review:
+
+1. `docs/workers/durable-worker-foundation.md` exists and makes only contract/execution-model claims, not implementation-complete durability claims.
+2. The contract names the selected model, lifecycle, retry/dead-letter, checkpoint/watermark, idempotency, observability, worker-DAG, and P6 read-only handoff rules.
+3. Residuals remain explicit for P6 Agent runtime, live Pi/provider/model work, production dashboards, paging/on-call, mature SLOs, incident management, cloud hardening, non-POS producers, and exactly-once semantics beyond tested guarantees.
+4. The active-slice validation commands pass.
+
 ## Slice Ownership
 
 ### `DD-P5-S1`
