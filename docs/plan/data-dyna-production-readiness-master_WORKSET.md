@@ -23,9 +23,9 @@
 
 必须交付：
 
-1. Concrete P6 pack defines and implements prepared context attempts, provider/runtime fail-closed policy, tool-policy enforcement, validator/merchant-review gates, and Agent audit evidence.
+1. Concrete P6 pack defines and implements OpenClaw-like boundary management, prepared attempts, selected runtime/harness policy, LLM-owned turn flow, tool-boundary enforcement, validator/merchant-review gates, deletion proof, and Agent audit evidence.
 2. Agent tests prove output remains draft/hypothesis, cannot write Core fact tables, cannot bypass validator, cannot bypass merchant review, and cannot call forbidden mutation tools.
-3. Production dashboarding, paging, mature SLOs, incident management, cloud secrets, deployment hardening, and production model operations remain deferred until successor/ops packs own them.
+3. Compatibility code, fallback runtime/model/provider branches, old aliases, and server-owned business-flow orchestration are prohibited; production dashboarding, paging, mature SLOs, incident management, cloud secrets, deployment hardening, and production model operations remain deferred until successor/ops packs own them.
 
 done_when:
 

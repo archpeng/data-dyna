@@ -39,9 +39,9 @@
 
 必须交付：
 
-1. Concrete P6 pack defines and implements prepared context attempts, provider/runtime fail-closed policy, tool-policy enforcement, validator/merchant-review gates, and Agent audit evidence.
+1. Concrete P6 pack defines and implements OpenClaw-like boundary management, prepared attempts, selected runtime/harness policy, LLM-owned turn flow, tool-boundary enforcement, validator/merchant-review gates, deletion proof, and Agent audit evidence.
 2. Agent tests prove output remains draft/hypothesis, cannot write Core fact tables, cannot bypass validator, cannot bypass merchant review, and cannot call forbidden mutation tools.
-3. Production dashboarding, paging, mature SLOs, incident management, cloud secrets, deployment hardening, and production model operations remain deferred until successor/ops packs own them.
+3. Compatibility code, fallback runtime/model/provider branches, old aliases, and server-owned business-flow orchestration are prohibited; production dashboarding, paging, mature SLOs, incident management, cloud secrets, deployment hardening, and production model operations remain deferred until successor/ops packs own them.
 
 done_when:
 
@@ -78,7 +78,7 @@ stop_boundary:
 - `data-dyna-durable-worker-foundation` reached `PACK_COMPLETE` with accepted P5 closeout evidence.
 - P5 evidence covers PostgreSQL worker jobs/attempts/checkpoints/dead letters, app-layer repository transitions, bounded deterministic executors, checkpoint recovery, idempotent rerun, retry/dead-letter audit, redaction-safe diagnostics, local/test worker observability/probe/runbook, and P6 handoff residuals.
 - `docs/plan/README.md` now activates `data-dyna-agent-runtime-integration` with active slice `DD-P6-S1` owned by `execute-plan`.
-- `data-dyna-agent-runtime-integration` starts with an Agent runtime contract and provider-mode decision that consumes P5 worker-fresh handoff constraints without granting arbitrary SQL, raw payload, secret, Core write, business mutation, or evidence-promotion authority.
+- `data-dyna-agent-runtime-integration` starts with an OpenClaw-like boundary-manager contract and no-fallback runtime decision that consumes P5 worker-fresh handoff constraints without granting arbitrary SQL, raw payload, secret, Core write, business mutation, evidence-promotion, compatibility fallback, or alternate runtime fallback authority.
 
 ## Machine State
 

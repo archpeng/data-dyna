@@ -2,12 +2,12 @@
 
 ## Stage Order
 
-- [ ] `DD-P6-S1` Agent runtime contract and provider-mode decision
-- [ ] `DD-P6-S2` prepared context attempt and worker-freshness readers
-- [ ] `DD-P6-S3` runtime adapter and provider fail-closed policy
-- [ ] `DD-P6-S4` runtime tool-policy enforcement and audit
-- [ ] `DD-P6-S5` validator and merchant-review gate integration
-- [ ] `DD-P6-S6` Agent observability, failure/cost audit, and runbook
+- [ ] `DD-P6-S1` boundary-manager contract and no-fallback runtime decision
+- [ ] `DD-P6-S2` prepared attempt seed and read-only tool surface
+- [ ] `DD-P6-S3` single Agent harness and LLM-owned turn loop
+- [ ] `DD-P6-S4` runtime tool-boundary enforcement and audit
+- [ ] `DD-P6-S5` result boundary, validator, and merchant-review gate
+- [ ] `DD-P6-S6` Agent observability, deletion proof, and runbook
 - [ ] `DD-P6-CLOSEOUT-S1` P6 closeout audit
 
 ## Active Stage
@@ -20,118 +20,141 @@
 
 目标：
 
-- Define the concrete P6 runtime contract, prepared context attempt, provider/runtime mode decision, and fail-closed boundaries before implementation expands the Agent path.
+- Define the concrete P6 Agent boundary-manager contract, OpenClaw-like LLM-owned turn model, selected runtime/harness path, and hard no-compatibility/no-fallback deletion policy before implementation expands the Agent path.
 
 必须交付：
 
-1. A P6 runtime contract document defines runtime modes, prepared context attempt shape, Agent run lifecycle, context freshness requirements, provider config boundaries, tool-policy gate, validator/merchant-review gate, audit fields, and residuals.
-2. The contract maps accepted P5 handoff capabilities into P6 read-only context preparation without arbitrary SQL, raw payload, secret, worker mutation, Core write, or business mutation authority.
-3. The contract chooses a local/test validation strategy for fixture/Pi-provider boundaries and states what production provider/secrets/ops work remains residual if not testable locally.
-4. Parser truth remains aligned on this P6 pack and active slice.
+1. A P6 contract document states that Data Dyna manages boundaries while the LLM owns query/reason/draft flow inside those boundaries.
+2. The contract defines prepared attempt, worker freshness refs, context seed/index, tool catalog, runtime policy gates, selected runtime/harness path, session/run audit, result schema, validator gate, merchant-review gate, and residuals.
+3. The contract maps accepted P5 handoff capabilities into P6 read-only tools without arbitrary SQL, raw payload, secret, worker mutation, Core write, business mutation, or evidence-promotion authority.
+4. The contract names obsolete compatibility/flow-manager surfaces to remove or replace in later slices, including any fixture-only runtime path or `adapter.draft(...)` abstraction that would bypass the LLM-owned turn loop.
+5. Parser truth remains aligned on this P6 pack and active slice.
 
 done_when:
 
-1. P6 runtime mode and provider-boundary decision is documented with fail-closed behavior for missing or ambiguous provider/model/profile/auth/tool policy.
-2. Prepared context attempt, worker freshness refs, context budget, allowed read capabilities, forbidden capabilities, and audit lifecycle are documented as the only path to Agent invocation.
-3. No live provider credential, live LLM call, direct Core write, direct business mutation, raw payload read, arbitrary SQL, or secret-read claim is introduced.
-4. `npm run test:agent`, `npm run check:plan`, and `git diff --check` pass.
+1. P6 boundary-manager and selected runtime/harness decision is documented with fail-closed behavior for missing or ambiguous provider/model/profile/auth/tool policy.
+2. The contract explicitly says no compatibility code, no architecture-iteration fallback, no fixture fallback, no provider/model/runtime fallback, and delete obsolete code rather than wrapping it.
+3. Prepared attempt, worker freshness refs, context budget, allowed read tools, forbidden capabilities, tool policy lifecycle, audit lifecycle, validator gate, and merchant-review gate are documented as the only path to Agent invocation and result acceptance.
+4. No live provider credential, live LLM call, direct Core write, direct business mutation, raw payload read, arbitrary SQL, secret-read claim, or server-owned business-flow orchestration is introduced.
+5. `npm run test:agent`, `npm run check:plan`, and `git diff --check` pass.
 
 stop_boundary:
 
 1. Stop if P6 requires live provider credentials, cloud deployment, production dashboarding, paging, or incident process before the contract can be accepted.
-2. Stop if the runtime contract allows Agent output to become fact, evidence, merchant decision, or business action without deterministic validator and merchant-review gates.
-3. Stop if the contract grants arbitrary SQL, raw payload, secret, worker mutation, Core write, or business mutation authority.
-4. Stop if parser truth drifts from the active P6 pack or active slice.
+2. Stop if the contract lets server code manage the business reasoning flow instead of only preparing boundaries, tools, prompt, policy, audit, and result gates.
+3. Stop if the contract allows Agent output to become fact, evidence, merchant decision, or business action without deterministic validator and merchant-review gates.
+4. Stop if the contract grants arbitrary SQL, raw payload, secret, worker mutation, Core write, business mutation, evidence promotion, compatibility fallback, or alternate runtime fallback authority.
+5. Stop if parser truth drifts from the active P6 pack or active slice.
 
 必须避免：
 
 1. Do not implement provider/runtime code before the P6 contract is accepted.
-2. Do not use the P5 handoff document to skip concrete P6 proof.
+2. Do not preserve compatibility code or fallback branches for future convenience.
+3. Do not use the P5 handoff document to skip concrete P6 proof.
+
+## Hard Requirements
+
+- P6 is boundary management, not server-side business-flow management.
+- The LLM owns query/reason/draft flow inside the prepared attempt and allowed tool boundary.
+- Data Dyna owns identity, worker freshness, context budget, tool policy, runtime selection, audit, redaction, result schemas, validator gate, merchant-review gate, and fail-closed behavior.
+- No compatibility code: do not keep old Agent paths, runtime aliases, duplicate adapters, old tool aliases, or transitional abstractions after a slice supersedes them.
+- No architecture-iteration fallback: do not silently fall back to fixture mode, legacy adapters, alternate providers, alternate models, relaxed policies, static draft functions, or old pipeline code.
+- Delete unnecessary code instead of wrapping it. Obsolete `adapter.draft(...)`, fixture-only runtime paths, allowed-operation lists, static context packers, or automatic flow pipelines must be removed or explicitly owned by a queued slice for deletion.
+- Local/test doubles may exist only in tests around the selected architecture; they must not be reachable production fallback paths.
+- Missing or ambiguous runtime/provider/model/profile/auth/tool policy fails closed with audit evidence.
 
 ## Slice Ownership
 
 ### `DD-P6-S1`
 
 - Allowed repo surfaces:
-  - `docs/agent/**` or the smallest equivalent P6 runtime contract document.
+  - `docs/agent/**` or the smallest equivalent P6 boundary-manager contract document.
   - `src/agent/README.md` for a minimal contract link if needed.
   - `docs/plan/*` parser-truth writeback only if needed for planning correction.
 - Disallowed surfaces:
   - Provider/runtime implementation before the P6 contract is accepted.
   - Live provider credentials, live LLM calls, Agent sessions against production services, or model auth/profile setup.
+  - Compatibility shims, fallback runtime branches, old aliases, dual-stack adapters, or server-owned business-flow orchestration.
   - Direct Core/business mutation tools, raw payload readers, arbitrary SQL, worker mutation tools, or production dashboards/SLOs/incidents.
 
 ### `DD-P6-S2`
 
 - Allowed repo surfaces:
-  - Minimal prepared context attempt schema/repository or local/test equivalent.
-  - Read-only context-preparation interfaces under `src/agent/**` or app-layer adapter seams if persistence is required.
-  - Tests under `tests/**` proving worker freshness gating and `AgentContextBundle` construction.
+  - Minimal prepared attempt schema/repository or local/test equivalent.
+  - Read-only context seed and tool-surface interfaces under `src/agent/**` or app-layer adapter seams if persistence is required.
+  - Tests under `tests/**` proving worker freshness gating, safe tool catalog, and bounded context seed construction.
 - Disallowed surfaces:
   - Provider calls or prompt execution.
   - Arbitrary SQL/raw payload/secret reads.
   - Worker job mutation or Core fact writes.
+  - Keeping static full-context packers or allowed-operation flow lists after the tool-catalog boundary supersedes them.
 
 ### `DD-P6-S3`
 
 - Allowed repo surfaces:
-  - Runtime adapter selection/config seams under `src/agent/**`.
-  - Fixture/local adapter proof and typed Pi/provider boundary code if it can fail closed without real credentials in tests.
-  - Tests for success, missing config/auth/model/profile/policy, and provider failure audit.
+  - One selected Agent harness/runtime path under `src/agent/**`.
+  - Prompt/tool/audit handoff code that lets the LLM own the turn loop.
+  - Tests for success, missing config/auth/model/profile/policy, provider/runtime failure audit, and no fallback path.
 - Disallowed surfaces:
   - Real network provider calls from default tests.
   - Secret logging or persisted provider credentials.
-  - Treating fixture output as production model behavior or merchant approval.
+  - Fixture fallback, legacy adapter fallback, alternate provider/model fallback, relaxed-policy fallback, or old `adapter.draft(...)` production path after replacement.
+  - Server code that hardcodes the business reasoning/tool-use sequence.
 
 ### `DD-P6-S4`
 
 - Allowed repo surfaces:
   - Agent tool descriptor/policy code under `src/agent/**`.
-  - Audit record fields for allowed/denied tools and policy version.
-  - Tests for allowed/forbidden tools and no adapter invocation after policy denial.
+  - Runtime call gate, tool-result sanitizer, and audit record fields for allowed/denied tools and policy version.
+  - Tests for allowed/forbidden tools, per-call enforcement, sanitized results, and no harness invocation after policy denial.
 - Disallowed surfaces:
   - Direct mutation tools for facts, workers, menus, prices, coupons, customer messages, evidence promotion, or arbitrary SQL.
   - Policy overrides from free-form Agent/provider output.
+  - Old tool names kept as aliases for compatibility.
 
 ### `DD-P6-S5`
 
 - Allowed repo surfaces:
-  - Agent validator/review handoff adapters under `src/agent/**` or existing merchant-review/evidence seams.
-  - Tests spanning valid draft, invalid draft, forbidden mutation, missing evidence, and bypass attempts.
+  - Agent result parsing, deterministic validator, and merchant-review handoff adapters under `src/agent/**` or existing merchant-review/evidence seams.
+  - Tests spanning valid draft, invalid draft, forbidden mutation, missing evidence, bypass attempts, and no automatic submit without result-gate acceptance.
   - Minimal docs/runbook updates for validator/review gate behavior.
 - Disallowed surfaces:
   - Business mutation execution.
   - LLM output as evidence fact or merchant decision.
   - Review submission that implies merchant approval.
+  - Automatic server-managed draft -> validate -> submit pipeline if it bypasses LLM-owned flow or hides gate decisions.
 
 ### `DD-P6-S6`
 
 - Allowed repo surfaces:
   - Agent observability/audit helpers under `src/agent/**` and existing app observability modules if needed.
-  - Local/test probe script for Agent runtime path.
+  - Local/test probe script for Agent runtime boundary.
   - Runbook docs under `docs/agent/**`.
+  - Deletion audit documentation for removed compatibility/fallback/flow-manager surfaces.
 - Disallowed surfaces:
   - Production dashboard/paging/SLO/incident implementation as a correctness prerequisite.
   - Secret/raw-payload/customer/payment/provider-key leakage in telemetry.
-  - Exactly-once or production cost guarantees without proof.
+  - Exactly-once, production cost, or fallback guarantees without proof.
+  - Documenting fallback as an operator option.
 
 ### `DD-P6-CLOSEOUT-S1`
 
 - Allowed repo surfaces:
   - `docs/plan/*` parser-truth closeout writeback.
-  - P6 docs/runbooks only for residual clarification discovered during audit.
+  - P6 docs/runbooks only for residual or deletion-audit clarification discovered during audit.
 - Disallowed surfaces:
   - New Agent runtime implementation during closeout.
   - Marking `PACK_COMPLETE` while non-deferred P6 stages remain unchecked.
-  - Hiding production operations or Agent safety residuals.
+  - Hiding production operations, Agent safety residuals, compatibility code, fallback paths, or server-owned business-flow orchestration.
 
 ## Current Technical Consensus
 
 - P6 starts only because P2/P3/P4/P5 packs are terminal with accepted evidence.
 - The active concrete pack is `data-dyna-agent-runtime-integration`.
-- P6 must consume P5 durable worker outputs through prepared, read-only, worker-fresh context; it must not scan unbounded raw history or rely on chat memory.
+- P6 must consume P5 durable worker outputs through prepared, read-only, worker-fresh boundaries; it must not scan unbounded raw history or rely on chat memory.
+- The runtime must be OpenClaw-like: host owns boundaries and policy; LLM/harness owns the turn flow.
 - Agent output is draft/hypothesis only and must pass deterministic validator plus merchant-review gates before any business action is considered.
-- Existing `src/agent/**` code is a foundation, not a completed P6 runtime; this pack must add concrete proof slice by slice.
+- No compatibility or fallback code should survive once a slice supersedes it; remove unneeded code instead of preserving it.
 
 ## Expected Validation Ladder
 
@@ -150,7 +173,7 @@ npm run check:plan
 git diff --check
 ```
 
-Escalate as later slices touch runtime, review, evidence, observability, worker freshness, or persistence:
+Escalate as later slices touch runtime, review, evidence, observability, worker freshness, persistence, or deletion proof:
 
 ```bash
 npm run test:agent
@@ -169,12 +192,12 @@ git diff --check
 
 | Wave | Slice | Owner | Acceptance handoff |
 |---|---|---|---|
-| `wave-1` | `DD-P6-S1` contract/provider-mode decision | `execute-plan` -> `execution-reality-audit` | accept -> activate `DD-P6-S2` |
-| `wave-2` | `DD-P6-S2` prepared context/freshness readers | `execute-plan` -> `execution-reality-audit` | accept -> activate `DD-P6-S3` |
-| `wave-3` | `DD-P6-S3` runtime adapter/provider fail-closed policy | `execute-plan` -> `execution-reality-audit` | accept -> activate `DD-P6-S4` |
-| `wave-4` | `DD-P6-S4` runtime tool-policy enforcement/audit | `execute-plan` -> `execution-reality-audit` | accept -> activate `DD-P6-S5` |
-| `wave-5` | `DD-P6-S5` validator/merchant-review gate | `execute-plan` -> `execution-reality-audit` | accept -> activate `DD-P6-S6` |
-| `wave-6` | `DD-P6-S6` observability/failure/cost/runbook | `execute-plan` -> `execution-reality-audit` | accept -> activate `DD-P6-CLOSEOUT-S1` |
+| `wave-1` | `DD-P6-S1` boundary-manager contract/no-fallback decision | `execute-plan` -> `execution-reality-audit` | accept -> activate `DD-P6-S2` |
+| `wave-2` | `DD-P6-S2` prepared attempt seed/read-only tools | `execute-plan` -> `execution-reality-audit` | accept -> activate `DD-P6-S3` |
+| `wave-3` | `DD-P6-S3` single harness/LLM-owned turn loop | `execute-plan` -> `execution-reality-audit` | accept -> activate `DD-P6-S4` |
+| `wave-4` | `DD-P6-S4` runtime tool-boundary enforcement/audit | `execute-plan` -> `execution-reality-audit` | accept -> activate `DD-P6-S5` |
+| `wave-5` | `DD-P6-S5` result boundary/validator/merchant-review gate | `execute-plan` -> `execution-reality-audit` | accept -> activate `DD-P6-S6` |
+| `wave-6` | `DD-P6-S6` observability/deletion proof/runbook | `execute-plan` -> `execution-reality-audit` | accept -> activate `DD-P6-CLOSEOUT-S1` |
 | `wave-closeout` | `DD-P6-CLOSEOUT-S1` closeout audit | `execution-reality-audit` | accept -> `PACK_COMPLETE`, then master writeback |
 
 ## Autopilot Transition Contract
@@ -194,8 +217,9 @@ git diff --check
 - latest_completed_step: `DD-PR-MASTER-P5`
 - intended_handoff: `execute-plan`
 - active_concrete_pack: `data-dyna-agent-runtime-integration`
-- latest_closeout_summary: P5 durable worker foundation closed; P6 Agent runtime integration is now the active concrete successor pack.
+- latest_closeout_summary: P5 durable worker foundation closed; P6 Agent runtime integration is active and reworked around boundary management, LLM-owned flow, and no compatibility/fallback code.
 - latest_verification:
   - `data-dyna-durable-worker-foundation STATUS/WORKSET are PACK_COMPLETE with done=7 pending=0.`
   - `P5 residuals and P6 successor handoff are preserved in docs/workers/p6-agent-runtime-handoff.md, docs/workers/durable-worker-foundation.md, src/app/workers/README.md, and docs/plan.`
-  - `Concrete P6 Agent runtime integration pack is now the active README pack with DD-P6-S1 ready for execute-plan.`
+  - `Concrete P6 Agent runtime integration pack is active with DD-P6-S1 ready for execute-plan.`
+  - `P6 workset hard requirements now prohibit compatibility code, architecture-iteration fallback, fixture/provider/model/runtime fallback, old aliases, and server-owned business-flow orchestration.`
