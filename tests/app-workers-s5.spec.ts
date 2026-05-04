@@ -19,16 +19,16 @@ assertWorkerSourceBoundaries("src/app/workers");
 function assertWorkerContract(contract: WorkerContract): void {
   assert.equal(contract.owner, "src/app");
   assert.equal(contract.invocationMode, "script_runner");
-  assert.equal(contract.implementationState, "foundation_contract_only");
+  assert.equal(contract.implementationState, "bounded_local_executor");
   assert.deepEqual(contract.reliability, {
-    queue: "not_implemented",
-    retry: "not_implemented",
-    checkpoint: "not_implemented",
-    deadLetter: "not_implemented",
+    queue: "repository_backed",
+    retry: "repository_backed_classified",
+    checkpoint: "repository_backed_after_output_write",
+    deadLetter: "repository_backed_safe_diagnostic",
   });
   assert.ok(existsSync(contract.modulePath), `${contract.modulePath} should exist`);
-  assert.match(contract.inputBoundary, /future app adapter/i);
-  assert.match(contract.outputBoundary, /no persistence, checkpoint, or retry code is implemented here/i);
+  assert.match(contract.inputBoundary, /app adapter/i);
+  assert.match(contract.outputBoundary, /injected output store before checkpointing/i);
   assert.ok(contract.explicitResiduals.some((residual) => residual.includes("No broker-backed queue")));
   assert.ok(contract.explicitResiduals.some((residual) => residual.includes("No Agent runtime")));
 }

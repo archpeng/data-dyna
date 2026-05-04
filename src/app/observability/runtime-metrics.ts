@@ -7,7 +7,11 @@ export type RuntimeMetricName =
   | "data_dyna_ingestion_batch_items_total"
   | "data_dyna_ingestion_auth_rejections_total"
   | "data_dyna_ingestion_tenant_policy_failures_total"
-  | "data_dyna_runtime_errors_total";
+  | "data_dyna_runtime_errors_total"
+  | "data_dyna_worker_jobs_total"
+  | "data_dyna_worker_checkpoints_total"
+  | "data_dyna_worker_duration_ms"
+  | "data_dyna_worker_lag_ms";
 
 export type RuntimeMetricType = "counter" | "histogram";
 
@@ -20,6 +24,12 @@ export type RuntimeMetricOutcome =
   | "unauthorized"
   | "tenant_identity_required"
   | "tenant_mismatch"
+  | "started"
+  | "checkpointed"
+  | "completed"
+  | "failed"
+  | "retry_scheduled"
+  | "dead_lettered"
   | "error";
 
 export type RuntimeMetricLabels = Partial<{
@@ -33,6 +43,9 @@ export type RuntimeMetricLabels = Partial<{
   producer_environment: string;
   event_domain: string;
   event_name: string;
+  worker_kind: string;
+  failure_class: string;
+  reason_code: string;
 }>;
 
 export type RuntimeMetricRecord = {
@@ -65,6 +78,9 @@ const allowedMetricLabelKeys = [
   "producer_environment",
   "event_domain",
   "event_name",
+  "worker_kind",
+  "failure_class",
+  "reason_code",
 ] as const;
 
 export function httpStatusClass(status: number): RuntimeMetricStatusClass {
@@ -123,7 +139,7 @@ export function incrementRuntimeCounter(
 export function observeRuntimeDuration(
   sink: RuntimeMetricSink | undefined,
   runtimeEnvironment: RuntimeEnvironment,
-  name: "data_dyna_http_request_duration_ms",
+  name: "data_dyna_http_request_duration_ms" | "data_dyna_worker_duration_ms" | "data_dyna_worker_lag_ms",
   value: number,
   labels: RuntimeMetricLabels,
 ): void {

@@ -10,7 +10,13 @@ export type RuntimeLogEvent =
   | "ingestion.event.duplicate"
   | "ingestion.event.invalid"
   | "ingestion.event.tenant_policy_rejected"
-  | "ingestion.batch.completed";
+  | "ingestion.batch.completed"
+  | "worker.job.started"
+  | "worker.job.checkpointed"
+  | "worker.job.completed"
+  | "worker.job.failed"
+  | "worker.job.retry_scheduled"
+  | "worker.job.dead_lettered";
 
 export type RuntimeLogOutcome =
   | "accepted"
@@ -19,6 +25,12 @@ export type RuntimeLogOutcome =
   | "unauthorized"
   | "tenant_identity_required"
   | "tenant_mismatch"
+  | "started"
+  | "checkpointed"
+  | "completed"
+  | "failed"
+  | "retry_scheduled"
+  | "dead_lettered"
   | "error";
 
 export type RuntimeLogRecord = {
@@ -48,6 +60,16 @@ export type RuntimeLogRecord = {
   duplicate_count?: number;
   invalid_count?: number;
   tenant_policy_failure_count?: number;
+  worker_kind?: string;
+  worker_id?: string;
+  job_id?: string;
+  attempt_id?: number;
+  attempt_count?: number;
+  max_attempts?: number;
+  failure_class?: string;
+  reason_code?: string;
+  next_action?: string;
+  lag_ms?: number;
 };
 
 export type RuntimeLogInput = Omit<RuntimeLogRecord, "timestamp" | "service" | "runtime_environment">;

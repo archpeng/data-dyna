@@ -49,6 +49,10 @@ const expectedTables = [
   'restaurant_segments',
   'sessions',
   'store_profile_snapshots',
+  'worker_checkpoints',
+  'worker_dead_letters',
+  'worker_job_attempts',
+  'worker_jobs',
 ];
 
 function buildDefaultDatabaseUrl() {
@@ -313,6 +317,240 @@ async function assertRawEventTenancyContract(client) {
   );
 
   console.log('Verified raw event tenant/idempotency migration contract.');
+}
+
+async function assertWorkerJobDurabilityContract(client) {
+  const expectedWorkerJobColumns = [
+    'attempt_count',
+    'correlation_id',
+    'idempotency_identity',
+    'input_watermark',
+    'locked_until',
+    'max_attempts',
+    'merchant_id',
+    'source',
+    'status',
+    'store_id',
+    'worker_kind',
+  ];
+  const { rows: workerJobColumns } = await client.query(
+    `SELECT column_name
+       FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'worker_jobs'
+        AND column_name = ANY($1::text[])
+      ORDER BY column_name`,
+    [expectedWorkerJobColumns],
+  );
+  assert.deepEqual(
+    workerJobColumns.map((row) => row.column_name),
+    expectedWorkerJobColumns,
+    'worker_jobs durability and idempotency columns should exist',
+  );
+
+  await client.query(
+    `INSERT INTO worker_jobs (
+       job_id,
+       worker_kind,
+       status,
+       brand_id,
+       merchant_id,
+       store_id,
+       source,
+       producer_service,
+       producer_environment,
+       input_watermark,
+       idempotency_identity,
+       correlation_id
+     ) VALUES (
+       'worker_job:db-migration-check:projection',
+       'projection',
+       'queued',
+       'brand:db-migration-check',
+       'merchant:db-migration-check',
+       'store:db-migration-check',
+       'pos',
+       'pos-lite-cashier',
+       'test',
+       $1::jsonb,
+       'projection:merchant:store:pos:watermark',
+       'correlation:db-migration-check'
+     )`,
+    [JSON.stringify({ receivedAt: '2026-05-04T00:00:00.000Z', eventId: 'raw-event:db-migration-check' })],
+  );
+
+  await expectUniqueViolation(
+    client,
+    'worker_jobs tenant/source idempotency identity',
+    `INSERT INTO worker_jobs (
+       job_id,
+       worker_kind,
+       status,
+       merchant_id,
+       store_id,
+       source,
+       producer_service,
+       producer_environment,
+       input_watermark,
+       idempotency_identity,
+       correlation_id
+     ) VALUES (
+       'worker_job:db-migration-check:projection:duplicate',
+       'projection',
+       'queued',
+       'merchant:db-migration-check',
+       'store:db-migration-check',
+       'pos',
+       'pos-lite-cashier',
+       'test',
+       $1::jsonb,
+       'projection:merchant:store:pos:watermark',
+       'correlation:db-migration-check:duplicate'
+     )`,
+    [JSON.stringify({ receivedAt: '2026-05-04T00:00:00.000Z', eventId: 'raw-event:db-migration-check' })],
+  );
+
+  await expectCheckViolation(
+    client,
+    'worker_kind enum',
+    `INSERT INTO worker_jobs (
+       job_id,
+       worker_kind,
+       status,
+       source,
+       input_watermark,
+       idempotency_identity,
+       correlation_id
+     ) VALUES (
+       'worker_job:db-migration-check:invalid-kind',
+       'agent',
+       'queued',
+       'pos',
+       '{}'::jsonb,
+       'invalid-kind',
+       'correlation:invalid-kind'
+     )`,
+  );
+
+  await expectCheckViolation(
+    client,
+    'worker_jobs input_watermark object',
+    `INSERT INTO worker_jobs (
+       job_id,
+       worker_kind,
+       status,
+       source,
+       input_watermark,
+       idempotency_identity,
+       correlation_id
+     ) VALUES (
+       'worker_job:db-migration-check:invalid-watermark',
+       'projection',
+       'queued',
+       'pos',
+       '[]'::jsonb,
+       'invalid-watermark',
+       'correlation:invalid-watermark'
+     )`,
+  );
+
+  const { rows: attemptRows } = await client.query(
+    `INSERT INTO worker_job_attempts (
+       job_id,
+       attempt_number,
+       worker_kind,
+       claimed_by,
+       status,
+       input_watermark
+     ) VALUES (
+       'worker_job:db-migration-check:projection',
+       1,
+       'projection',
+       'worker:db-migration-check',
+       'started',
+       $1::jsonb
+     ) RETURNING attempt_id`,
+    [JSON.stringify({ receivedAt: '2026-05-04T00:00:00.000Z', eventId: 'raw-event:db-migration-check' })],
+  );
+  const attemptId = attemptRows[0].attempt_id;
+
+  await client.query(
+    `INSERT INTO worker_checkpoints (
+       checkpoint_id,
+       worker_kind,
+       brand_id,
+       merchant_id,
+       store_id,
+       source,
+       producer_service,
+       producer_environment,
+       committed_watermark,
+       committed_job_id,
+       committed_attempt_id,
+       output_summary
+     ) VALUES (
+       'worker_checkpoint:db-migration-check:projection',
+       'projection',
+       'brand:db-migration-check',
+       'merchant:db-migration-check',
+       'store:db-migration-check',
+       'pos',
+       'pos-lite-cashier',
+       'test',
+       $1::jsonb,
+       'worker_job:db-migration-check:projection',
+       $2,
+       $3::jsonb
+     )`,
+    [
+      JSON.stringify({ receivedAt: '2026-05-04T00:00:00.000Z', eventId: 'raw-event:db-migration-check' }),
+      attemptId,
+      JSON.stringify({ outputRecordCount: 1 }),
+    ],
+  );
+
+  await client.query(
+    `INSERT INTO worker_dead_letters (
+       job_id,
+       attempt_id,
+       worker_kind,
+       brand_id,
+       merchant_id,
+       store_id,
+       source,
+       producer_service,
+       producer_environment,
+       input_watermark,
+       attempt_count,
+       failure_class,
+       reason_code,
+       safe_diagnostic,
+       next_operator_action
+     ) VALUES (
+       'worker_job:db-migration-check:projection',
+       $1,
+       'projection',
+       'brand:db-migration-check',
+       'merchant:db-migration-check',
+       'store:db-migration-check',
+       'pos',
+       'pos-lite-cashier',
+       'test',
+       $2::jsonb,
+       1,
+       'contract_violation',
+       'WORKER_CONTRACT_VIOLATION',
+       $3::jsonb,
+       'inspect_safe_dead_letter'
+     )`,
+    [
+      attemptId,
+      JSON.stringify({ receivedAt: '2026-05-04T00:00:00.000Z', eventId: 'raw-event:db-migration-check' }),
+      JSON.stringify({ reasonCode: 'WORKER_CONTRACT_VIOLATION' }),
+    ],
+  );
+
+  console.log('Verified worker job/checkpoint/dead-letter migration contract.');
 }
 
 async function assertBusinessMutationConstraint(client) {
@@ -712,6 +950,7 @@ async function main() {
   await withClient(url, 'data-dyna-db-migration-check-assertions', async (client) => {
     await assertTablesExist(client);
     await assertRawEventTenancyContract(client);
+    await assertWorkerJobDurabilityContract(client);
     await assertBusinessMutationConstraint(client);
     await assertEvidenceClaimsConstraint(client);
     await assertFinalFactSourceConstraint(client);

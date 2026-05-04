@@ -35,7 +35,7 @@ P3 is complete: runtime logs and metrics cover auth rejection, accepted, duplica
 
 P4 is complete: one POS `pos.order_paid` producer path maps to `DataDynaEvent`, delivers through authenticated `POST /events`, proves accepted/duplicate/invalid/unauthorized/tenant-mismatch/transient-send-failure behavior, and documents replay/backfill handoff while preserving P5/P6/production residuals.
 
-Runtime worker seams exist but are contract-only. `src/app/workers/**` currently declares projection, snapshot, benchmark, and evidence worker ownership boundaries with `queue`, `retry`, `checkpoint`, and `deadLetter` all `not_implemented`.
+Runtime worker seams started as contract-only. `DD-P5-S3` gives `src/app/workers/**` bounded local/test executors for projection, snapshot, benchmark, and evidence paths on top of the accepted S2 repository seam, `DD-P5-S4` adds classified retry/dead-letter handling with safe diagnostics, `DD-P5-S5` adds accepted local/test worker lifecycle observability/probe/runbook evidence, and `DD-P5-S6` adds accepted P6 handoff packet evidence; production scheduling, production operations, live P6 runtime, and exactly-once semantics remain later stages/residuals.
 
 ## OpenClaw/Pi Usage Principles Adapted for P5
 

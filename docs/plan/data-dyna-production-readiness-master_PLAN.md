@@ -4,7 +4,7 @@
 
 This lightweight master pack preserves the P2-P6 production-readiness sequence without over-specifying late-stage implementation details before earlier gates produce evidence.
 
-It is a roadmap tracker under the single repo-local `docs/plan/*` control plane. It does not replace the active concrete execution pack. The active concrete pack is `data-dyna-durable-worker-foundation`.
+It is a roadmap tracker under the single repo-local `docs/plan/*` control plane. It does not replace the active concrete execution pack. The active concrete pack is `data-dyna-agent-runtime-integration`.
 
 ## Source Truth
 
@@ -17,12 +17,17 @@ It is a roadmap tracker under the single repo-local `docs/plan/*` control plane.
 - `docs/plan/data-dyna-observability-foundation_WORKSET.md`
 - `docs/plan/data-dyna-external-producer-integration_STATUS.md`
 - `docs/plan/data-dyna-external-producer-integration_WORKSET.md`
+- `docs/plan/data-dyna-durable-worker-foundation_STATUS.md`
+- `docs/plan/data-dyna-durable-worker-foundation_WORKSET.md`
+- `docs/workers/p6-agent-runtime-handoff.md`
+- `docs/workers/durable-worker-foundation.md`
 - `docs/integration/external-producer-contract.md`
 - `docs/observability/runtime-observability-foundation.md`
 - P1 closeout evidence from commit `6c11098 chore: add testable runtime deployment`
 - P2 closeout evidence from `data-dyna-auth-tenancy-foundation` `PACK_COMPLETE`
 - P3 closeout evidence from `data-dyna-observability-foundation` `PACK_COMPLETE`
 - P4 closeout evidence from `data-dyna-external-producer-integration` `PACK_COMPLETE`
+- P5 closeout evidence from `data-dyna-durable-worker-foundation` `PACK_COMPLETE`
 
 ## Current Baseline
 
@@ -39,8 +44,8 @@ Remaining production-readiness work must keep these boundaries explicit:
 - P2 before real producer traffic: complete; do not reopen unless future regression evidence appears.
 - P3 before wider runtime expansion: complete; do not reopen unless future regression evidence appears.
 - P4 after P2/P3: complete for one POS order-paid pilot path; non-POS producers and external POS runtime hookup remain residual.
-- P5 after real event flow exists: active durable worker queue, retries, checkpoints, dead letters, idempotent background processing, and P6 handoff foundation.
-- P6 last: Agent runtime integration with provider, validator, merchant review, audit, and no direct mutation authority remains queued until P5 evidence exists.
+- P5 after real event flow exists: complete durable worker queue, retries, checkpoints, dead letters, idempotent background processing, and P6 handoff foundation.
+- P6 last: active Agent runtime integration with provider boundary, validator, merchant review, audit, and no direct mutation authority after P5 evidence exists.
 - Cloud production deployment hardening and production operations remain explicit residuals until a deployment/ops pack owns them.
 
 ## Master Stage Definitions
@@ -147,7 +152,7 @@ stop_boundary:
 #### `DD-PR-MASTER-P5` — create durable worker queue foundation pack after P4
 
 - Owner: `plan-creator`
-- State: `READY`
+- State: `DONE`
 - Priority: `high`
 
 目标：
@@ -180,7 +185,7 @@ stop_boundary:
 #### `DD-PR-MASTER-P6` — create Agent runtime integration pack last
 
 - Owner: `plan-creator`
-- State: `QUEUED`
+- State: `READY`
 - Priority: `medium`
 
 目标：
