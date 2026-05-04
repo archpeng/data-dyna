@@ -63,6 +63,38 @@ stop_boundary:
 - Local/test doubles may exist only in tests around the selected architecture; they must not be reachable production fallback paths.
 - Missing or ambiguous runtime/provider/model/profile/auth/tool policy fails closed with audit evidence.
 
+## Explicit Risk Guardrails
+
+### Risk 1: `adapter.draft(context)` is forbidden as the runtime shape
+
+- Forbidden shape: server code calls `adapter.draft(context)` or an equivalent static draft function as the primary Agent runtime.
+- Required shape: a selected `runAgentAttempt({ preparedAttempt, prompt, tools, policy, runtime, audit })`-style boundary hands a tool-governed turn to the LLM/harness.
+- Workset enforcement:
+  - `DD-P6-S1` must name `adapter.draft(...)` and fixture-only runtime paths as obsolete compatibility/flow-manager surfaces.
+  - `DD-P6-S3` must replace the draft-function adapter shape with a single Agent harness and prove no old adapter path remains reachable in production code.
+  - `DD-P6-S6` must include deletion proof for removed compatibility/fallback/flow-manager code.
+- Stop if production Agent runtime still centers on `adapter.draft(context)` after `DD-P6-S3` acceptance.
+
+### Risk 2: hidden server-managed business flow is forbidden
+
+- Forbidden shape: server code hardcodes `read summary -> draft -> validate -> submit` or any equivalent automatic business reasoning pipeline.
+- Required shape: the LLM chooses allowed read tools and reasoning order; server code only prepares boundaries/tools/prompt/policy/audit and then enforces result schemas, deterministic validator, and merchant-review gates.
+- Workset enforcement:
+  - `DD-P6-S1` contract must state that validation and merchant review are result gates, not hidden system-managed reasoning flow.
+  - `DD-P6-S3` must prove the harness lets the LLM choose allowed tool calls and draft timing.
+  - `DD-P6-S5` must prove no automatic submit occurs without accepted result gates and must delete any old automatic draft -> validate -> submit pipeline that bypasses LLM-owned flow.
+- Stop if server code owns the query/reason/tool-use sequence or auto-submits review as a hidden workflow step.
+
+### Risk 3: over-constraining the LLM into template filling is forbidden
+
+- Forbidden shape: system preselects the full context and reasoning path so the LLM can only fill a template.
+- Required shape: prepared attempt provides a bounded context seed/index plus committed worker freshness refs and read-only tools; the LLM chooses what to inspect within policy.
+- Workset enforcement:
+  - `DD-P6-S2` must build prepared attempt as context seed plus read-only tool boundary, not a full server-selected transcript.
+  - `DD-P6-S2` must delete obsolete static context-packing or allowed-operation flow code when replaced by the prepared-attempt/tool-catalog boundary.
+  - `DD-P6-S4` must preserve LLM-owned flow inside the allowed tool catalog while enforcing per-call tool boundaries.
+- Stop if context preparation preselects the full reasoning path, scans unbounded raw history, or hides stale/dead-lettered worker outputs behind best-effort context.
+
 ## Slice Ownership
 
 ### `DD-P6-S1`

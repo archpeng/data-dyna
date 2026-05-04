@@ -18,6 +18,13 @@ P6 starts from the accepted P5 handoff: bounded worker outputs, committed freshn
 4. Do not implement a server-side business workflow manager. The runtime must prepare boundaries and tools, then hand the turn to the LLM/harness. Validation and merchant review are result gates, not a hidden system-managed reasoning flow.
 5. Do not expose arbitrary SQL, raw payload reads, secret reads, worker mutation tools, Core writes, direct business mutations, or evidence promotion to the Agent.
 
+## Explicit Risk Guardrails
+
+1. **No `adapter.draft(context)` runtime shape**: production Agent runtime must become a `runAgentAttempt({ preparedAttempt, prompt, tools, policy, runtime, audit })`-style boundary that hands a tool-governed turn to the LLM/harness. `adapter.draft(...)`, fixture-only runtime paths, and static draft functions are obsolete once the selected harness owns behavior.
+2. **No hidden server-managed business flow**: server code must not hardcode `read summary -> draft -> validate -> submit` or any equivalent reasoning pipeline. The LLM chooses allowed read tools and draft timing; the server enforces boundaries, result schemas, deterministic validator, and merchant-review gates.
+3. **No template-only over-constraint**: prepared attempts must provide a bounded context seed/index plus read-only tools, not a full server-selected reasoning transcript. The LLM must be able to inspect allowed summaries through tools inside policy, while raw history, secrets, stale/dead-lettered freshness, and mutation surfaces remain blocked.
+4. **Risk closure is slice-owned**: `DD-P6-S1` names the guardrails in contract, `DD-P6-S2` proves context seed/read-only tools, `DD-P6-S3` replaces draft-function runtime with one harness, `DD-P6-S4` enforces per-call tool boundaries, `DD-P6-S5` blocks automatic submit/pipeline bypass, and `DD-P6-S6` provides deletion proof.
+
 ## Source Truth
 
 - `docs/roadmap/data-dyna-production-readiness-roadmap.md`
