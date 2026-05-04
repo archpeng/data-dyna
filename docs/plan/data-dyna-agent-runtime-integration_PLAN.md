@@ -86,8 +86,8 @@ Out of scope:
 
 #### `DD-P6-S1` — boundary-manager contract and no-fallback runtime decision
 
-- Owner: `execute-plan`
-- State: `READY`
+- Owner: `execution-reality-audit`
+- State: `DONE`
 - Priority: `critical`
 
 目标：
@@ -127,7 +127,7 @@ stop_boundary:
 #### `DD-P6-S2` — prepared attempt seed and read-only tool surface
 
 - Owner: `execute-plan`
-- State: `QUEUED`
+- State: `READY`
 - Priority: `critical`
 
 目标：

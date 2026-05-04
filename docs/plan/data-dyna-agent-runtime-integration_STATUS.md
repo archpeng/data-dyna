@@ -11,14 +11,14 @@
 
 ## Current Step
 
-- active_step: `DD-P6-S1`
-- active_wave: `wave-1`
+- active_step: `DD-P6-S2`
+- active_wave: `wave-2`
 - mode: `ready_for_execute`
 - intended_handoff: `execute-plan`
 
 ## Planned Stages
 
-- [ ] `DD-P6-S1` boundary-manager contract and no-fallback runtime decision
+- [x] `DD-P6-S1` boundary-manager contract and no-fallback runtime decision
 - [ ] `DD-P6-S2` prepared attempt seed and read-only tool surface
 - [ ] `DD-P6-S3` single Agent harness and LLM-owned turn loop
 - [ ] `DD-P6-S4` runtime tool-boundary enforcement and audit
@@ -28,7 +28,7 @@
 
 ## Immediate Focus
 
-### `DD-P6-S1`
+### `DD-P6-S2`
 
 - Owner: `execute-plan`
 - State: `READY`
@@ -36,37 +36,48 @@
 
 目标：
 
-- Define the concrete P6 Agent boundary-manager contract, OpenClaw-like LLM-owned turn model, selected runtime/harness path, and hard no-compatibility/no-fallback deletion policy before implementation expands the Agent path.
+- Build the prepared Agent attempt as a safe context seed plus read-only tool boundary, allowing the LLM to decide what to inspect while preventing unsafe data or mutation access.
 
 必须交付：
 
-1. A P6 contract document states that Data Dyna manages boundaries while the LLM owns query/reason/draft flow inside those boundaries.
-2. The contract defines prepared attempt, worker freshness refs, context seed/index, tool catalog, runtime policy gates, selected runtime/harness path, session/run audit, result schema, validator gate, merchant-review gate, and residuals.
-3. The contract maps accepted P5 handoff capabilities into P6 read-only tools without arbitrary SQL, raw payload, secret, worker mutation, Core write, business mutation, or evidence-promotion authority.
-4. The contract names obsolete compatibility/flow-manager surfaces to remove or replace in later slices, including any fixture-only runtime path or `adapter.draft(...)` abstraction that would bypass the LLM-owned turn loop.
-5. Parser truth remains aligned on this P6 pack and active slice.
+1. Prepared attempt schema/repository or accepted local/test equivalent records worker freshness refs, context seed hash, context budget, tool catalog version, forbidden capabilities, status, and failure reasons.
+2. Read-only tools expose projection/snapshot/benchmark/evidence/dead-letter summaries through typed interfaces scoped by committed freshness refs; no arbitrary SQL, raw payload, secret, peer-store identity, or worker mutation access exists.
+3. Tests prove missing/stale/dead-lettered/tenant-mismatched/over-budget worker freshness fails closed and successful preparation creates a bounded seed/index for the LLM-owned turn.
+4. Obsolete static context-packing or allowed-operation code is removed when replaced by the prepared-attempt/tool-catalog boundary.
 
 done_when:
 
-1. P6 boundary-manager and selected runtime/harness decision is documented with fail-closed behavior for missing or ambiguous provider/model/profile/auth/tool policy.
-2. The contract explicitly says no compatibility code, no architecture-iteration fallback, no fixture fallback, no provider/model/runtime fallback, and delete obsolete code rather than wrapping it.
-3. Prepared attempt, worker freshness refs, context budget, allowed read tools, forbidden capabilities, tool policy lifecycle, audit lifecycle, validator gate, and merchant-review gate are documented as the only path to Agent invocation and result acceptance.
-4. No live provider credential, live LLM call, direct Core write, direct business mutation, raw payload read, arbitrary SQL, secret-read claim, or server-owned business-flow orchestration is introduced.
-5. `npm run test:agent`, `npm run check:plan`, and `git diff --check` pass.
+1. A prepared attempt can be created, blocked, or marked prepared with auditable worker freshness refs and no mutation side effects.
+2. Agent context seed construction uses only committed worker outputs and points to read-only tools for additional LLM-selected inspection.
+3. Tests prove fail-closed behavior for missing freshness, dead letters, tenant/source mismatch, forbidden raw data, and context budget overflow.
+4. Replaced compatibility/static-flow code is deleted rather than kept as an alternate path.
+5. `npm run test:agent`, `npm run test:app:workers`, `npm run check:boundaries`, `npm run typecheck`, `npm test`, `npm run check:plan`, and `git diff --check` pass.
 
 stop_boundary:
 
-1. Stop if P6 requires live provider credentials, cloud deployment, production dashboarding, paging, or incident process before the contract can be accepted.
-2. Stop if the contract lets server code manage the business reasoning flow instead of only preparing boundaries, tools, prompt, policy, audit, and result gates.
-3. Stop if the contract allows Agent output to become fact, evidence, merchant decision, or business action without deterministic validator and merchant-review gates.
-4. Stop if the contract grants arbitrary SQL, raw payload, secret, worker mutation, Core write, business mutation, evidence promotion, compatibility fallback, or alternate runtime fallback authority.
-5. Stop if parser truth drifts from the active P6 pack or active slice.
+1. Stop if context preparation scans unbounded raw event history, reads raw payloads/secrets, exposes peer-store identity, or performs worker/Core mutations.
+2. Stop if prepared attempts can proceed without committed worker freshness refs.
+3. Stop if tenant/store/opportunity scope can be supplied by free-form Agent input rather than accepted deterministic identity.
+4. Stop if this slice starts provider calls before prepared attempt/tool-boundary proof is accepted.
+5. Stop if obsolete static-flow/compatibility code remains reachable after replacement.
 
 必须避免：
 
-1. Do not implement provider/runtime code before the P6 contract is accepted.
-2. Do not preserve compatibility code or fallback branches for future convenience.
-3. Do not use the P5 handoff document to skip concrete P6 proof.
+1. Do not add Agent write access to worker job state or Core fact tables.
+2. Do not hide stale/dead-lettered worker outputs behind best-effort context preparation.
+3. Do not preselect the full reasoning path for the LLM.
+## Current Execution Handoff
+
+- wave_id: `wave-2`
+- parent_step: `DD-P6-S2`
+- selected_slice: `DD-P6-S2`
+- next_handoff: `execute-plan`
+
+Execution focus for the next execute phase:
+
+1. Implement the smallest prepared-attempt seed/tool-boundary proof that satisfies `DD-P6-S2` without provider calls.
+2. Preserve the accepted S1 boundary contract: prepared attempt plus read-only tools, no raw payloads/secrets/arbitrary SQL/worker mutation/Core writes/business mutation/evidence promotion, and no fallback or compatibility path.
+3. Run the S2 validation ladder from the active workset before claiming execution completion.
 
 ## Current Technical Consensus
 
@@ -86,15 +97,19 @@ npm run check:plan
 git diff --check
 ```
 
-For `DD-P6-S1` contract/boundary-manager docs:
+For the active `DD-P6-S2` prepared-attempt/tool-surface slice:
 
 ```bash
 npm run test:agent
+npm run test:app:workers
+npm run check:boundaries
+npm run typecheck
+npm test
 npm run check:plan
 git diff --check
 ```
 
-Escalate as P6 adds prepared attempts, runtime harness, policy enforcement, validator/review gates, observability, or deletion proof:
+Escalate as P6 adds runtime harness, policy enforcement, validator/review gates, observability, or deletion proof:
 
 ```bash
 npm run test:agent
@@ -117,8 +132,8 @@ npm run test:app:workers
 
 ## Blockers
 
-- None currently known for `DD-P6-S1` execution.
-- Live provider credentials, production Agent deployment, cloud secrets, production dashboards/SLOs/paging/incidents, and mature model operations are not prerequisites for S1 and remain residual unless a later P6 slice explicitly accepts them.
+- None currently known for `DD-P6-S2` review.
+- Live provider credentials, production Agent deployment, cloud secrets, production dashboards/SLOs/paging/incidents, and mature model operations are not prerequisites for S2 and remain residual unless a later P6 slice explicitly accepts them.
 
 ## Residuals / Notes
 
@@ -134,15 +149,43 @@ npm run test:app:workers
 - Master tracker writeback marks `DD-PR-MASTER-P5` done and activates `DD-PR-MASTER-P6`; this pack is the concrete P6 Agent runtime integration queue.
 - P6 replan hardened the pack around boundary management, LLM-owned flow, and no compatibility/fallback/dead-code preservation.
 
+## Latest Execution Evidence
+
+### `DD-P6-S2` execute wave-2
+
+- Added `src/agent/prepared-attempt.ts` with local/test prepared-attempt repository, deterministic context seed/hash, committed worker freshness refs, read-only tool catalog/surface, forbidden capability list, context budget gates, and blocked/prepared statuses.
+- Added `tests/agent-prepared-attempt-s2.spec.ts` and wired it into `package.json` `test:agent` and full `test` coverage.
+- Updated `src/agent/README.md` to identify `prepared-attempt.ts` as the S2 prepared-attempt/tool-boundary proof.
+- Validation passed: `npm run test:agent`; `npm run test:app:workers`; `npm run check:boundaries`; `npm run typecheck`; `npm test`; `npm run check:plan`; `git diff --check`.
+- Next deterministic handoff: same-slice `review` via `execution-reality-audit`; do not mark `DD-P6-S2` done until review accepts the evidence.
+
+### `DD-P6-S1` review wave-1
+
+- Review accepted `docs/agent/agent-runtime-boundary-contract.md` as satisfying the P6 boundary-manager contract and no-fallback runtime decision slice.
+- Review reran validation: `npm run test:agent`; `npm run check:plan`; `git diff --check`.
+- Parser truth advanced to `DD-P6-S2` for prepared attempt seed and read-only tool surface execution.
+
+### `DD-P6-S1` execute wave-1
+
+- Created `docs/agent/agent-runtime-boundary-contract.md` as the P6 boundary-manager contract artifact.
+- Added `tests/agent-runtime-contract-s1.spec.ts` and wired it into `package.json` `test:agent` and full `test` coverage.
+- Updated `src/agent/README.md` to link the S1 contract and mark existing fixture/`adapter.draft(...)` surfaces as pre-P6 raw material, not compatibility fallback.
+- Validation passed: `npm run test:agent`; `npm run check:plan`; `git diff --check`.
+
 ## Machine State
 
-- active_step: `DD-P6-S1`
-- latest_completed_step: `DD-PR-MASTER-P5`
+- active_step: `DD-P6-S2`
+- latest_completed_step: `DD-P6-S1`
 - intended_handoff: `execute-plan`
-- active_concrete_pack: `data-dyna-agent-runtime-integration`
-- latest_plan_summary: Reworked P6 plan around OpenClaw-like boundary management, LLM-owned flow, and hard no-compatibility/no-fallback deletion rules.
+- latest_closeout_summary: Accepted DD-P6-S1 review and activated DD-P6-S2.
 - latest_verification:
-  - `data-dyna-durable-worker-foundation STATUS/WORKSET are PACK_COMPLETE with done=7 pending=0.`
-  - `P5 residuals and P6 successor handoff are preserved in docs/workers/p6-agent-runtime-handoff.md, docs/workers/durable-worker-foundation.md, src/app/workers/README.md, and docs/plan.`
-  - `Concrete P6 Agent runtime integration pack is active with DD-P6-S1 ready for execute-plan.`
-  - `P6 plan/workset hard requirements now prohibit compatibility code, architecture-iteration fallback, fixture/provider/model/runtime fallback, old aliases, and server-owned business-flow orchestration.`
+  - `DD-P6-S2 execute added src/agent/prepared-attempt.ts with local/test prepared-attempt repository, context seed/hash, worker freshness refs, read-only tool descriptors/surface, forbidden capabilities, budget gates, and blocked/prepared statuses.`
+  - `DD-P6-S2 execute added tests/agent-prepared-attempt-s2.spec.ts proving prepared creation, missing/stale/dead-lettered/tenant-mismatched/over-budget/forbidden-raw/free-form-identity/unsafe-tool failures, and freshness-scoped read-only tools.`
+  - `Validation passed: npm run test:agent; npm run test:app:workers; npm run check:boundaries; npm run typecheck; npm test; npm run check:plan; git diff --check.`
+  - `Next handoff is DD-P6-S2 review; active_step remains DD-P6-S2 until review acceptance.`
+  - `src/agent/README.md`
+  - `package.json`
+  - `docs/plan/README.md`
+  - `docs/plan/data-dyna-agent-runtime-integration_PLAN.md`
+  - `docs/plan/data-dyna-agent-runtime-integration_STATUS.md`
+  - `docs/plan/data-dyna-agent-runtime-integration_WORKSET.md`

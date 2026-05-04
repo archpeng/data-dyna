@@ -8,7 +8,7 @@
 
 ## Current Active Slice
 
-- `DD-P6-S1`
+- `DD-P6-S2`
 ## Intended Handoff
 
 - `execute-plan`
@@ -18,7 +18,7 @@
 - `docs/plan/data-dyna-production-readiness-master_STATUS.md`
 - `docs/plan/data-dyna-production-readiness-master_WORKSET.md`
 - Master tracker note: lightweight P2-P6 sequence tracker; `data-dyna-agent-runtime-integration` is the active concrete P6 pack after `data-dyna-durable-worker-foundation` reached `PACK_COMPLETE`.
-- Activation note: P5 closeout accepted durable worker evidence for PostgreSQL worker jobs/checkpoints/dead letters, app-layer repository transitions, bounded executors, checkpoint recovery, idempotent rerun, retry/dead-letter audit, safe diagnostics, local/test worker observability/probe/runbook, and P6 handoff residuals. Master tracker writeback marked `DD-PR-MASTER-P5` done, activated `DD-PR-MASTER-P6`, and created `data-dyna-agent-runtime-integration` as the concrete P6 Agent runtime integration pack. Current active slice is `DD-P6-S1` for the OpenClaw-like boundary-manager contract, LLM-owned turn model, selected runtime/harness decision, and hard no-compatibility/no-fallback deletion policy.
+- Activation note: P5 closeout accepted durable worker evidence for PostgreSQL worker jobs/checkpoints/dead letters, app-layer repository transitions, bounded executors, checkpoint recovery, idempotent rerun, retry/dead-letter audit, safe diagnostics, local/test worker observability/probe/runbook, and P6 handoff residuals. Master tracker writeback marked `DD-PR-MASTER-P5` done, activated `DD-PR-MASTER-P6`, and created `data-dyna-agent-runtime-integration` as the concrete P6 Agent runtime integration pack. `DD-P6-S1` accepted the OpenClaw-like boundary-manager contract, LLM-owned turn model, selected runtime/harness decision, and hard no-compatibility/no-fallback deletion policy. Current active slice is `DD-P6-S2` for the prepared attempt seed and read-only tool surface.
 
 ## Autopilot Transition Contract
 
@@ -93,8 +93,8 @@ These invariants are the source-of-truth guard against the closeout drift that b
 
 - This is the single-root repo-local machine control plane for current `data-dyna` productionization planning.
 - Keep this README, the active `PLAN`, `STATUS`, and `WORKSET` aligned in the same writeback turn.
-- Current active-slice phase reports should use `stepId = DD-P6-S1` while this parser state remains current.
-- `data-dyna-agent-runtime-integration` is active for P6 with `DD-P6-S1` ready to define the Agent boundary-manager contract, prepared attempt, selected runtime/harness path, LLM-owned turn model, and hard no-compatibility/no-fallback deletion policy before implementation.
+- Current active-slice phase reports should use `stepId = DD-P6-S2` while this parser state remains current.
+- `data-dyna-agent-runtime-integration` is active for P6 with `DD-P6-S2` ready to implement the prepared attempt seed and read-only tool surface under the accepted S1 boundary-manager contract.
 - `data-dyna-durable-worker-foundation` reached `PACK_COMPLETE` after `DD-P5-CLOSEOUT-S1` audited accepted durable worker evidence and preserved P6 Agent runtime plus production-operations residuals.
 - `data-dyna-external-producer-integration` reached `PACK_COMPLETE` after `DD-P4-S1` accepted the producer contract and source mapping, `DD-P4-S2` accepted the mapper/fixture contract proof, `DD-P4-S3` accepted non-blocking producer delivery into `/events`, `DD-P4-S4` accepted the local/test runbook, observability, replay/backfill notes, and residual handoff, and `DD-P4-CLOSEOUT-S1` accepted the P4 closeout audit before terminalization.
 - `data-dyna-observability-foundation` reached `PACK_COMPLETE`; `DD-P3-S1` accepted the contract/redaction map, `DD-P3-S2` accepted structured runtime logging/correlation, `DD-P3-S3` accepted bounded ingestion metrics/counters, `DD-P3-S4` accepted observability runbook, alert/query notes, and targeted probe coverage, and `DD-P3-CLOSEOUT-S1` accepted the P3 closeout audit before terminalization.
