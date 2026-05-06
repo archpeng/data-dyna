@@ -126,8 +126,8 @@ stop_boundary:
 
 #### `DD-P6-S2` — prepared attempt seed and read-only tool surface
 
-- Owner: `execute-plan`
-- State: `READY`
+- Owner: `execution-reality-audit`
+- State: `DONE`
 - Priority: `critical`
 
 目标：
@@ -166,7 +166,7 @@ stop_boundary:
 #### `DD-P6-S3` — single Agent harness and LLM-owned turn loop
 
 - Owner: `execute-plan`
-- State: `QUEUED`
+- State: `READY_FOR_EXECUTE`
 - Priority: `high`
 
 目标：

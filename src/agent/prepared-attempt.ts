@@ -160,6 +160,7 @@ export type PreparedAttemptReadOnlyToolSurface = {
   read_snapshot_summary(input: { committedJobId: string }): ReadOnlyToolSummaryResult;
   read_benchmark_opportunity_gaps(input: { committedJobId: string }): ReadOnlyToolSummaryResult;
   read_evidence_records(input: { committedJobId: string }): ReadOnlyToolSummaryResult;
+  read_dead_letter_diagnosis(): PreparedAttemptFailureReason | undefined;
 };
 
 export type ReadOnlyToolSummaryResult = {
@@ -313,12 +314,13 @@ export function createPreparedAttemptReadOnlyTools(
   attempt: PreparedAgentAttempt,
 ): PreparedAttemptReadOnlyToolSurface {
   const parsed = PreparedAgentAttemptSchema.parse(attempt);
-  if (parsed.status !== "prepared") {
-    throw new Error("Read-only Agent tools require a prepared attempt.");
+  if (parsed.status !== "prepared" && parsed.status !== "blocked_dead_letter") {
+    throw new Error("Read-only Agent tools require a prepared or blocked dead-letter attempt.");
   }
 
   return {
     read_worker_freshness({ workerKind }) {
+      assertPreparedForSummaryTool(parsed);
       return requireFreshnessRef(parsed.workerFreshnessRefs, workerKind);
     },
     read_projection_summary({ committedJobId }) {
@@ -332,6 +334,9 @@ export function createPreparedAttemptReadOnlyTools(
     },
     read_evidence_records({ committedJobId }) {
       return readSummary(parsed, "evidence", committedJobId);
+    },
+    read_dead_letter_diagnosis() {
+      return readPreparedAttemptDeadLetterDiagnosis(parsed);
     },
   };
 }
@@ -412,12 +417,12 @@ function evaluatePreparedAttemptPolicy(input: {
         },
       };
     }
-    if (!tenantMatches(input.input, ref)) {
+    if (!tenantMatches(input.input, ref) || !sourceMatchesRequiredRefs(input.workerFreshnessRefs, input.requiredWorkerKinds, ref)) {
       return {
         status: "blocked_tenant_mismatch",
         reason: {
           code: "tenant_or_source_mismatch",
-          message: `Worker freshness for ${workerKind} does not match prepared attempt tenant scope.`,
+          message: `Worker freshness for ${workerKind} does not match prepared attempt tenant/source scope.`,
         },
       };
     }
@@ -465,6 +470,11 @@ function tenantMatches(input: PrepareAgentAttemptInput, ref: WorkerFreshnessRef)
   return ref.tenantScope.brandId === input.brandId && ref.tenantScope.storeId === input.storeId;
 }
 
+function sourceMatchesRequiredRefs(refs: WorkerFreshnessRef[], requiredWorkerKinds: WorkerKind[], ref: WorkerFreshnessRef): boolean {
+  const expected = refs.find((candidate) => requiredWorkerKinds.includes(candidate.workerKind))?.sourceScope;
+  return expected ? stableStringify(ref.sourceScope) === stableStringify(expected) : false;
+}
+
 function requireFreshnessRef(refs: WorkerFreshnessRef[], workerKind: WorkerKind): WorkerFreshnessRef {
   const ref = refs.find((candidate) => candidate.workerKind === workerKind);
   if (!ref) {
@@ -474,6 +484,7 @@ function requireFreshnessRef(refs: WorkerFreshnessRef[], workerKind: WorkerKind)
 }
 
 function readSummary(attempt: PreparedAgentAttempt, workerKind: WorkerKind, committedJobId: string): ReadOnlyToolSummaryResult {
+  assertPreparedForSummaryTool(attempt);
   const freshnessRef = requireFreshnessRef(attempt.workerFreshnessRefs, workerKind);
   if (freshnessRef.committedJobId !== committedJobId) {
     throw new Error(`Tool call is not scoped to the prepared ${workerKind} freshness ref.`);
@@ -481,6 +492,12 @@ function readSummary(attempt: PreparedAgentAttempt, workerKind: WorkerKind, comm
   assertWithinToolBudget(attempt, freshnessRef.outputSummary);
   assertNoForbiddenRawData(freshnessRef.outputSummary);
   return { freshnessRef, summary: freshnessRef.outputSummary };
+}
+
+function assertPreparedForSummaryTool(attempt: PreparedAgentAttempt): void {
+  if (attempt.status !== "prepared") {
+    throw new Error("Prepared attempt summary tools require a prepared attempt.");
+  }
 }
 
 function assertWithinToolBudget(attempt: PreparedAgentAttempt, summary: Record<string, JsonValue>): void {

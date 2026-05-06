@@ -61,9 +61,10 @@ assert.throws(
   () => tools.read_projection_summary({ committedJobId: "worker_job:projection:other" }),
   /not scoped to the prepared projection freshness ref/,
 );
+assert.equal(tools.read_dead_letter_diagnosis(), undefined);
 assert.throws(
   () => createPreparedAttemptReadOnlyTools({ ...prepared, status: "blocked_policy" }),
-  /require a prepared attempt/,
+  /require a prepared or blocked dead-letter attempt/,
 );
 
 const missingFreshness = prepareAgentAttempt({
@@ -99,6 +100,12 @@ const deadLettered = prepareAgentAttempt({
 assert.equal(deadLettered.status, "blocked_dead_letter");
 assert.equal(readPreparedAttemptDeadLetterDiagnosis(deadLettered)?.code, "dead_lettered_worker");
 assert.match(readPreparedAttemptDeadLetterDiagnosis(deadLettered)?.message ?? "", /repair deterministic benchmark worker output/);
+const deadLetterTools = createPreparedAttemptReadOnlyTools(deadLettered);
+assert.equal(deadLetterTools.read_dead_letter_diagnosis()?.code, "dead_lettered_worker");
+assert.throws(
+  () => deadLetterTools.read_benchmark_opportunity_gaps({ committedJobId: "worker_job:benchmark:001" }),
+  /summary tools require a prepared attempt/,
+);
 
 const tenantMismatch = prepareAgentAttempt({
   ...baseInput,
@@ -109,6 +116,17 @@ const tenantMismatch = prepareAgentAttempt({
 });
 assert.equal(tenantMismatch.status, "blocked_tenant_mismatch");
 assert.equal(tenantMismatch.failureReason?.code, "tenant_or_source_mismatch");
+
+const sourceMismatch = prepareAgentAttempt({
+  ...baseInput,
+  attemptId: "prepared_attempt:source-mismatch",
+  freshnessRecords: baseInput.freshnessRecords.map((record) =>
+    record.workerKind === "evidence" ? { ...record, sourceScope: { ...record.sourceScope, source: "crm" } } : record,
+  ),
+});
+assert.equal(sourceMismatch.status, "blocked_tenant_mismatch");
+assert.equal(sourceMismatch.failureReason?.code, "tenant_or_source_mismatch");
+assert.match(sourceMismatch.failureReason?.message ?? "", /tenant\/source scope/);
 
 const forbiddenRawData = prepareAgentAttempt({
   ...baseInput,
@@ -128,6 +146,16 @@ const overBudget = prepareAgentAttempt({
 });
 assert.equal(overBudget.status, "blocked_policy");
 assert.equal(overBudget.failureReason?.code, "context_budget_exceeded");
+const overToolBudget = prepareAgentAttempt({
+  ...baseInput,
+  attemptId: "prepared_attempt:over-tool-budget",
+  contextBudget: { maxSeedBytes: 8192, maxToolResultBytes: 10 },
+});
+assert.equal(overToolBudget.status, "prepared");
+assert.throws(
+  () => createPreparedAttemptReadOnlyTools(overToolBudget).read_projection_summary({ committedJobId: "worker_job:projection:001" }),
+  /tool-result budget/,
+);
 
 const freeFormIdentity = prepareAgentAttempt({
   ...baseInput,
