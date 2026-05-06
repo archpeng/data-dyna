@@ -15,7 +15,7 @@ export const AgentAllowedDraftOperationSchema = z.enum([
   "inspect_opportunity_gap",
   "draft_intervention_hypothesis",
   "draft_experiment_plan",
-  "submit_for_merchant_review",
+  "request_merchant_review_gate",
 ]);
 export const DisallowedAgentMutationTargetSchema = z.enum([
   "orders",
@@ -54,7 +54,7 @@ export const DEFAULT_ALLOWED_DRAFT_OPERATIONS: AgentAllowedDraftOperation[] = [
   "inspect_opportunity_gap",
   "draft_intervention_hypothesis",
   "draft_experiment_plan",
-  "submit_for_merchant_review",
+  "request_merchant_review_gate",
 ];
 
 export const AgentOpportunityGapFactSchema = z.object({

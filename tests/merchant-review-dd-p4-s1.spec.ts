@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import type { OpportunityGap } from "../src/benchmarks/opportunity-gaps.ts";
 import { buildAgentContextBundle } from "../src/agent/context-bundle.ts";
-import { draftFixtureExperimentPlanFromContext } from "../src/agent/experiment-plan.ts";
 import { validateExperimentPlan } from "../src/agent/experiment-validator.ts";
+import { draftFixtureExperimentPlanFromContext } from "./support/experiment-plan-fixture.ts";
 import { EventNameSchema } from "../src/contracts/event-contract.ts";
 import { toPostHogSinkEvent } from "../src/ingestion/posthog-sink.ts";
 import {

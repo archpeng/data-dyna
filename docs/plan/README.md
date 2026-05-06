@@ -2,23 +2,21 @@
 
 ## Active Pack
 
-- `docs/plan/data-dyna-agent-runtime-integration_PLAN.md`
-- `docs/plan/data-dyna-agent-runtime-integration_STATUS.md`
-- `docs/plan/data-dyna-agent-runtime-integration_WORKSET.md`
-
-## Current Active Slice
-
-- `DD-P6-S3`
-## Intended Handoff
-
-- `execute-plan`
-## Queued Successor Pack
-
 - `docs/plan/data-dyna-production-readiness-master_PLAN.md`
 - `docs/plan/data-dyna-production-readiness-master_STATUS.md`
 - `docs/plan/data-dyna-production-readiness-master_WORKSET.md`
-- Master tracker note: lightweight P2-P6 sequence tracker; `data-dyna-agent-runtime-integration` is the active concrete P6 pack after `data-dyna-durable-worker-foundation` reached `PACK_COMPLETE`.
-- Activation note: P5 closeout accepted durable worker evidence for PostgreSQL worker jobs/checkpoints/dead letters, app-layer repository transitions, bounded executors, checkpoint recovery, idempotent rerun, retry/dead-letter audit, safe diagnostics, local/test worker observability/probe/runbook, and P6 handoff residuals. Master tracker writeback marked `DD-PR-MASTER-P5` done, activated `DD-PR-MASTER-P6`, and created `data-dyna-agent-runtime-integration` as the concrete P6 Agent runtime integration pack. `DD-P6-S1` accepted the OpenClaw-like boundary-manager contract, LLM-owned turn model, selected runtime/harness decision, and hard no-compatibility/no-fallback deletion policy. `DD-P6-S2` accepted the prepared attempt seed/read-only tool boundary after review repaired source-mismatch, dead-letter tool-surface, and tool-result budget proof. Current active slice is `DD-P6-S3` for the single Agent harness and LLM-owned turn loop.
+
+## Current Active Slice
+
+- `PACK_COMPLETE`
+## Intended Handoff
+
+- `autopilot-closeout`
+## Queued Successor Pack
+
+- No queued successor pack is active after production-readiness master closeout.
+- Residual successor work must be created by explicit future replan/plan-creator if production deployment, cloud hardening, dashboards, SLOs, paging, incident management, capacity planning, live provider rollout, or mature model operations become in scope.
+- Master tracker note: lightweight P2-P6 sequence tracker reached `PACK_COMPLETE` after P6 Agent runtime integration reached `PACK_COMPLETE` and the master closeout audited accepted P2-P6 evidence.
 
 ## Autopilot Transition Contract
 
@@ -70,6 +68,14 @@
 - `docs/plan/data-dyna-durable-worker-foundation_STATUS.md`
 - `docs/plan/data-dyna-durable-worker-foundation_WORKSET.md`
 - terminal state: `PACK_COMPLETE`, owner `closeout`, state `DONE`; P5 durable worker closeout accepted worker schema/repository, bounded executors, checkpoint recovery, idempotent rerun, retry/dead-letter handling, worker observability/probe/runbook, and P6 handoff evidence.
+- `docs/plan/data-dyna-agent-runtime-integration_PLAN.md`
+- `docs/plan/data-dyna-agent-runtime-integration_STATUS.md`
+- `docs/plan/data-dyna-agent-runtime-integration_WORKSET.md`
+- terminal state: `PACK_COMPLETE`, owner `closeout`, state `DONE`; P6 Agent runtime integration closeout accepted boundary-manager contract, prepared attempt/read-only tool surface, selected harness, runtime tool policy, draft-only result boundary, validator/merchant-review gate, Agent observability/probe/runbook, deletion proof, and residual handoff.
+- `docs/plan/data-dyna-production-readiness-master_PLAN.md`
+- `docs/plan/data-dyna-production-readiness-master_STATUS.md`
+- `docs/plan/data-dyna-production-readiness-master_WORKSET.md`
+- terminal state: `PACK_COMPLETE`, owner `closeout`, state `DONE`; production-readiness master closeout accepted P2 auth/tenancy, P3 observability, P4 external producer, P5 durable worker, and P6 Agent runtime evidence while preserving production deployment/ops/model residuals.
 - Do not resume completed packs unless a future replan explicitly reopens them.
 
 ## Autopilot Parser Invariants
@@ -93,13 +99,13 @@ These invariants are the source-of-truth guard against the closeout drift that b
 
 - This is the single-root repo-local machine control plane for current `data-dyna` productionization planning.
 - Keep this README, the active `PLAN`, `STATUS`, and `WORKSET` aligned in the same writeback turn.
-- Current active-slice phase reports should use `stepId = DD-P6-S3` while this parser state remains current.
-- `data-dyna-agent-runtime-integration` is active for P6 with `DD-P6-S3` ready for execution of the single Agent harness and LLM-owned turn loop under the accepted S1/S2 boundary-manager evidence.
+- Current active-slice phase reports should use `stepId = PACK_COMPLETE` only for repo-local closeout prompt surface handling; the completed P6 review used `stepId = DD-P6-CLOSEOUT-S1`.
+- `data-dyna-agent-runtime-integration` reached `PACK_COMPLETE` after `DD-P6-CLOSEOUT-S1` audited accepted P6 Agent runtime evidence and preserved production-readiness master residuals.
 - `data-dyna-durable-worker-foundation` reached `PACK_COMPLETE` after `DD-P5-CLOSEOUT-S1` audited accepted durable worker evidence and preserved P6 Agent runtime plus production-operations residuals.
 - `data-dyna-external-producer-integration` reached `PACK_COMPLETE` after `DD-P4-S1` accepted the producer contract and source mapping, `DD-P4-S2` accepted the mapper/fixture contract proof, `DD-P4-S3` accepted non-blocking producer delivery into `/events`, `DD-P4-S4` accepted the local/test runbook, observability, replay/backfill notes, and residual handoff, and `DD-P4-CLOSEOUT-S1` accepted the P4 closeout audit before terminalization.
 - `data-dyna-observability-foundation` reached `PACK_COMPLETE`; `DD-P3-S1` accepted the contract/redaction map, `DD-P3-S2` accepted structured runtime logging/correlation, `DD-P3-S3` accepted bounded ingestion metrics/counters, `DD-P3-S4` accepted observability runbook, alert/query notes, and targeted probe coverage, and `DD-P3-CLOSEOUT-S1` accepted the P3 closeout audit before terminalization.
 - `data-dyna-auth-tenancy-foundation` reached `PACK_COMPLETE` after closeout audited the P2 auth/tenancy contract, schema/storage, runtime auth boundary, tenant-safe writes, smoke/runbook, and validation evidence.
-- `data-dyna-production-readiness-master` now marks `DD-PR-MASTER-P5` done and tracks `DD-PR-MASTER-P6` through the active concrete `data-dyna-agent-runtime-integration` pack while preserving production-operations residuals without over-specifying post-P6 work.
+- `data-dyna-production-readiness-master` reached `PACK_COMPLETE` after master writeback marked `DD-PR-MASTER-P6` done and closeout audited accepted P2-P6 concrete-pack evidence while preserving production-operations residuals without over-specifying post-P6 work.
 - `data-dyna-testable-runtime-deployment` reached `PACK_COMPLETE` after `DD-P1-CLOSEOUT-S1` audited Dockerfile, runtime DB wiring, smoke gate, runbook, validation evidence, and residual handoff.
 - `DD-P1-S4` review accepted the Docker/testable-runtime runbook and preflight evidence and advanced the pack to `DD-P1-CLOSEOUT-S1`.
 - `DD-P1-S3` review accepted the runtime smoke gate evidence and advanced the pack to `DD-P1-S4`.

@@ -4,7 +4,7 @@
 
 This lightweight master pack preserves the P2-P6 production-readiness sequence without over-specifying late-stage implementation details before earlier gates produce evidence.
 
-It is a roadmap tracker under the single repo-local `docs/plan/*` control plane. It does not replace the active concrete execution pack. The active concrete pack is `data-dyna-agent-runtime-integration`.
+It is a roadmap tracker under the single repo-local `docs/plan/*` control plane. It reached terminal closeout after the concrete P6 Agent runtime integration pack reached `PACK_COMPLETE`.
 
 ## Source Truth
 
@@ -28,6 +28,7 @@ It is a roadmap tracker under the single repo-local `docs/plan/*` control plane.
 - P3 closeout evidence from `data-dyna-observability-foundation` `PACK_COMPLETE`
 - P4 closeout evidence from `data-dyna-external-producer-integration` `PACK_COMPLETE`
 - P5 closeout evidence from `data-dyna-durable-worker-foundation` `PACK_COMPLETE`
+- P6 closeout evidence from `data-dyna-agent-runtime-integration` `PACK_COMPLETE`
 
 ## Current Baseline
 
@@ -39,13 +40,17 @@ P3 is complete: redaction-safe structured logs, bounded metrics/counters, local/
 
 P4 is complete: the POS `pos.order_paid` pilot producer path has accepted contract, mapper, authenticated `/events` delivery, non-blocking failure classification, runbook/probe, replay/backfill, and residual evidence.
 
+P5 is complete: durable worker queue, retries, checkpoints, dead letters, idempotent background processing, worker observability, and P6 handoff foundation have accepted closeout evidence.
+
+P6 is complete: Agent runtime integration accepted boundary-manager contract, prepared attempt/read-only tool surface, selected harness, runtime tool policy, draft-only result boundary, validator/merchant-review gate, Agent observability/probe/runbook, deletion proof, and residual handoff.
+
 Remaining production-readiness work must keep these boundaries explicit:
 
 - P2 before real producer traffic: complete; do not reopen unless future regression evidence appears.
 - P3 before wider runtime expansion: complete; do not reopen unless future regression evidence appears.
 - P4 after P2/P3: complete for one POS order-paid pilot path; non-POS producers and external POS runtime hookup remain residual.
-- P5 after real event flow exists: complete durable worker queue, retries, checkpoints, dead letters, idempotent background processing, and P6 handoff foundation.
-- P6 last: active Agent runtime integration with provider boundary, validator, merchant review, audit, and no direct mutation authority after P5 evidence exists.
+- P5 after real event flow exists: complete; do not reopen unless future regression evidence appears.
+- P6 last: complete controlled Agent runtime integration with no fact-source or direct mutation authority; do not reopen unless future regression evidence appears.
 - Cloud production deployment hardening and production operations remain explicit residuals until a deployment/ops pack owns them.
 
 ## Master Stage Definitions
@@ -185,7 +190,7 @@ stop_boundary:
 #### `DD-PR-MASTER-P6` — create Agent runtime integration pack last
 
 - Owner: `plan-creator`
-- State: `READY`
+- State: `DONE`
 - Priority: `medium`
 
 目标：
@@ -217,8 +222,8 @@ stop_boundary:
 
 #### `DD-PR-MASTER-CLOSEOUT-S1` — P2-P6 production-readiness master closeout
 
-- Owner: `execution-reality-audit`
-- State: `QUEUED`
+- Owner: `closeout`
+- State: `DONE`
 - Priority: `medium`
 
 目标：
@@ -248,10 +253,37 @@ stop_boundary:
 1. Do not close the master from wave count alone.
 2. Do not collapse P2-P6 residuals into vague “production complete” language.
 
+#### `PACK_COMPLETE` — terminal parser state
+
+- Owner: `closeout`
+- State: `DONE`
+- Priority: `terminal`
+
+目标：
+
+- Represent the completed P2-P6 production-readiness master tracker after all non-deferred master stages and concrete packs have accepted closeout evidence.
+
+done_when:
+
+1. README `Current Active Slice` is `PACK_COMPLETE` for this master pack.
+2. STATUS and WORKSET mark P2-P6 plus master closeout done with zero pending stages.
+3. Production deployment/ops/model residuals are explicit and not hidden behind the master `PACK_COMPLETE` state.
+
+stop_boundary:
+
+1. Stop if any P2-P6 concrete pack is not `PACK_COMPLETE`.
+2. Stop if terminal state hides unresolved production deployment, operations, cloud, dashboard, SLO, incident, capacity, or model-operation residuals.
+3. Stop if parser truth still names any active slice other than `PACK_COMPLETE`.
+
+必须避免：
+
+1. Do not treat master `PACK_COMPLETE` as cloud production deployment approval.
+2. Do not reopen completed concrete packs without explicit future replan.
+
 ## Master Handoff Law
 
 - The master tracker is updated by `plan-creator` after each concrete pack closeout.
 - Concrete pack `closeout/done` should route the next `master_plan` turn here, not restart the completed concrete pack.
-- The currently active concrete pack owns implementation and review.
+- Concrete implementation and review remain owned by concrete packs until their closeout reaches `PACK_COMPLETE`.
 - Late-stage details should be refined only when predecessor evidence exists.
 - `PACK_COMPLETE` for the master is illegal until all non-deferred P2-P6 master stages are done.

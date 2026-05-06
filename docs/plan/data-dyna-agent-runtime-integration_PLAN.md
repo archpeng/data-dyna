@@ -358,6 +358,30 @@ stop_boundary:
 2. Do not hide production provider, dashboard, SLO, incident, cloud, or unresolved Agent residuals.
 3. Do not preserve old behavior behind compatibility switches.
 
+#### `PACK_COMPLETE` — terminal parser state
+
+- Owner: `closeout`
+- State: `DONE`
+- Priority: `terminal`
+
+目标：
+
+- Represent the completed P6 Agent runtime integration pack after closeout review accepted all non-deferred slices and residuals.
+
+done_when:
+
+1. README `Current Active Slice` is `PACK_COMPLETE` for this pack.
+2. WORKSET `Active Stage` is `PACK_COMPLETE` with owner `closeout` and state `DONE`.
+3. STATUS `Current State` is `DONE`, active_step is `PACK_COMPLETE`, and terminal evidence names the accepted P6 slices.
+4. Production-readiness master tracker recommendation is preserved for `DD-PR-MASTER-P6` writeback and master closeout activation.
+
+stop_boundary:
+
+1. Stop if any non-deferred P6 stage is unchecked.
+2. Stop if README/PLAN/STATUS/WORKSET do not parse as terminal `PACK_COMPLETE` truth.
+3. Stop if compatibility/fallback/server-owned-flow or direct Agent mutation residuals are hidden.
+4. Stop if parser truth still names any active slice other than `PACK_COMPLETE`.
+
 ## Autopilot Transition Contract
 
 - `master_plan/completed` or planning writeback for this pack activates `DD-P6-S1` and routes to `execute-plan`.

@@ -1,16 +1,15 @@
 import { z } from "zod";
 
 export const AgentToolNameSchema = z.enum([
-  "get_store_context",
-  "get_peer_benchmark",
-  "get_opportunity_gaps",
-  "get_similar_trajectories",
-  "draft_experiment_plan",
-  "validate_experiment_plan",
-  "submit_for_merchant_review",
+  "read_worker_freshness",
+  "read_projection_summary",
+  "read_snapshot_summary",
+  "read_benchmark_opportunity_gaps",
+  "read_evidence_records",
+  "read_dead_letter_diagnosis",
 ]);
 
-export const AgentToolCapabilitySchema = z.enum(["read_context", "draft", "validate", "submit_review"]);
+export const AgentToolCapabilitySchema = z.literal("read_context");
 export const AgentToolMutationPolicySchema = z.literal("no_core_or_business_mutation");
 
 export const AgentToolDescriptorSchema = z.object({
@@ -32,57 +31,50 @@ export type AgentToolDescriptor = z.infer<typeof AgentToolDescriptorSchema>;
 export type AgentToolPolicyResult = z.infer<typeof AgentToolPolicyResultSchema>;
 
 export const SAFE_AGENT_TOOL_NAMES: AgentToolName[] = [
-  "get_store_context",
-  "get_peer_benchmark",
-  "get_opportunity_gaps",
-  "get_similar_trajectories",
-  "draft_experiment_plan",
-  "validate_experiment_plan",
-  "submit_for_merchant_review",
+  "read_worker_freshness",
+  "read_projection_summary",
+  "read_snapshot_summary",
+  "read_benchmark_opportunity_gaps",
+  "read_evidence_records",
+  "read_dead_letter_diagnosis",
 ];
 
 export const DEFAULT_AGENT_TOOL_DESCRIPTORS: AgentToolDescriptor[] = [
   {
-    name: "get_store_context",
+    name: "read_worker_freshness",
     capability: "read_context",
     mutationPolicy: "no_core_or_business_mutation",
-    description: "Read deterministic store context for one agent run.",
+    description: "Read committed worker freshness refs for one prepared Agent attempt.",
   },
   {
-    name: "get_peer_benchmark",
+    name: "read_projection_summary",
     capability: "read_context",
     mutationPolicy: "no_core_or_business_mutation",
-    description: "Read aggregate-only peer benchmark facts.",
+    description: "Read bounded projection aggregate summaries from a prepared freshness ref.",
   },
   {
-    name: "get_opportunity_gaps",
+    name: "read_snapshot_summary",
     capability: "read_context",
     mutationPolicy: "no_core_or_business_mutation",
-    description: "Read deterministic opportunity gaps for hypothesis generation.",
+    description: "Read bounded snapshot aggregate summaries from a prepared freshness ref.",
   },
   {
-    name: "get_similar_trajectories",
+    name: "read_benchmark_opportunity_gaps",
     capability: "read_context",
     mutationPolicy: "no_core_or_business_mutation",
-    description: "Read de-identified historical trajectory summaries when available.",
+    description: "Read aggregate-only benchmark opportunity gaps from a prepared freshness ref.",
   },
   {
-    name: "draft_experiment_plan",
-    capability: "draft",
+    name: "read_evidence_records",
+    capability: "read_context",
     mutationPolicy: "no_core_or_business_mutation",
-    description: "Draft an experiment plan for deterministic validation and merchant review.",
+    description: "Read deterministic evidence summaries without promoting LLM-authored facts.",
   },
   {
-    name: "validate_experiment_plan",
-    capability: "validate",
+    name: "read_dead_letter_diagnosis",
+    capability: "read_context",
     mutationPolicy: "no_core_or_business_mutation",
-    description: "Run deterministic validator checks over a drafted experiment plan.",
-  },
-  {
-    name: "submit_for_merchant_review",
-    capability: "submit_review",
-    mutationPolicy: "no_core_or_business_mutation",
-    description: "Submit a validated draft to merchant review without applying business changes.",
+    description: "Read redacted dead-letter diagnosis for a blocked prepared attempt.",
   },
 ];
 

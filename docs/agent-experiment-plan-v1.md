@@ -4,21 +4,18 @@
 
 ## Tool boundary
 
-`src/agent/agent-tools.ts` defines a documented project-local tool boundary instead of registering a live mutation extension in this slice.
+`src/agent/agent-tools.ts` now mirrors the P6 prepared read-only runtime tool names instead of preserving old draft/validate/submit aliases.
 
-Allowed high-level tools are:
+Allowed read tools are:
 
-1. `get_store_context`
-2. `get_peer_benchmark`
-3. `get_opportunity_gaps`
-4. `get_similar_trajectories`
-5. `draft_experiment_plan`
-6. `validate_experiment_plan`
-7. `submit_for_merchant_review`
+1. `read_worker_freshness`
+2. `read_projection_summary`
+3. `read_snapshot_summary`
+4. `read_benchmark_opportunity_gaps`
+5. `read_evidence_records`
+6. `read_dead_letter_diagnosis`
 
-Every descriptor must use `mutationPolicy = no_core_or_business_mutation`. Direct mutation-like tools for menu, price, coupon, customer messaging, orders, metrics, benchmarks, evidence facts, or business configs are denied by allowlist policy.
-
-This is the Pi extension/tool package boundary for now: a future project-local extension can register these descriptors, but this slice proves the policy without requiring live Pi runtime loading or model credentials.
+Every descriptor must use `mutationPolicy = no_core_or_business_mutation`. Direct mutation-like tools for menu, price, coupon, customer messaging, orders, metrics, benchmarks, evidence facts, or business configs are denied by allowlist policy. Draft validation and merchant-review handoff are result gates, not runtime tools or compatibility aliases.
 
 ## Structured drafts
 
@@ -47,6 +44,8 @@ A valid experiment plan must carry:
 - `needs_more_data`
 
 The validator is deterministic. It checks schemas, identity, evidence refs, uncertainty/confidence, draft-not-truth status, no Core writes, merchant confirmation, rollback support, guardrails, and peer sample status. It does not call an LLM and does not let the Agent decide safety.
+
+`src/agent/result-boundary.ts` parses captured Agent drafts into deterministic hypothesis/experiment-plan artifacts, records `draft_validation_evaluated`, and only emits `merchant_review_requested` after an accepted validation gate. It does not imply merchant approval or execute business mutations.
 
 ## Project-local Pi surfaces
 

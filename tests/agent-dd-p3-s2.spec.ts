@@ -9,8 +9,9 @@ import {
   assertAgentToolPolicy,
   evaluateAgentToolPolicy,
 } from "../src/agent/agent-tools.ts";
-import { ExperimentPlanSchema, draftFixtureExperimentPlanFromContext } from "../src/agent/experiment-plan.ts";
+import { ExperimentPlanSchema } from "../src/agent/experiment-plan.ts";
 import { validateExperimentPlan } from "../src/agent/experiment-validator.ts";
+import { draftFixtureExperimentPlanFromContext } from "./support/experiment-plan-fixture.ts";
 
 const opportunityGap: OpportunityGap = {
   opportunityGapId: "opportunity_gap:brand-1:store-target:2026-05-02:avg_order_value",
@@ -49,13 +50,12 @@ const context = buildAgentContextBundle({
 });
 
 assert.deepEqual(SAFE_AGENT_TOOL_NAMES, [
-  "get_store_context",
-  "get_peer_benchmark",
-  "get_opportunity_gaps",
-  "get_similar_trajectories",
-  "draft_experiment_plan",
-  "validate_experiment_plan",
-  "submit_for_merchant_review",
+  "read_worker_freshness",
+  "read_projection_summary",
+  "read_snapshot_summary",
+  "read_benchmark_opportunity_gaps",
+  "read_evidence_records",
+  "read_dead_letter_diagnosis",
 ]);
 for (const descriptor of DEFAULT_AGENT_TOOL_DESCRIPTORS) {
   assert.deepEqual(AgentToolDescriptorSchema.parse(descriptor), descriptor);
@@ -67,8 +67,12 @@ assert.throws(
   /safe high-level allowlist/,
 );
 assert.throws(
-  () => assertAgentToolPolicy([{ name: "get_store_context", mutationPolicy: "can_write_business_config" }]),
+  () => assertAgentToolPolicy([{ name: "read_projection_summary", mutationPolicy: "can_write_business_config" }]),
   /no_core_or_business_mutation/,
+);
+assert.throws(
+  () => assertAgentToolPolicy([{ name: "draft_experiment_plan", mutationPolicy: "no_core_or_business_mutation" }]),
+  /safe high-level allowlist/,
 );
 
 const draft = draftFixtureExperimentPlanFromContext(context);
@@ -165,7 +169,8 @@ assert.match(prompt, /Do not directly apply menu, price, coupon, customer-messag
 assert.match(prompt, /Return a draft for deterministic validation and merchant review only/);
 
 const doc = readFileSync("docs/agent-experiment-plan-v1.md", "utf8");
-assert.match(doc, /get_store_context/);
-assert.match(doc, /validate_experiment_plan/);
+assert.match(doc, /read_worker_freshness/);
+assert.match(doc, /read_benchmark_opportunity_gaps/);
+assert.doesNotMatch(doc, /submit_for_merchant_review/);
 assert.match(doc, /deterministic/);
 assert.match(doc, /does not call an LLM/);

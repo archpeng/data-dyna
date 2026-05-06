@@ -2,89 +2,49 @@
 
 ## Current State
 
-- state: `READY_FOR_EXECUTE`
-- owner: `execute-plan`
+- state: `DONE`
+- owner: `closeout`
 - route: `PLAN -> EXEC -> REVIEW -> REPLAN -> CLOSEOUT`
 - workstream: `data-dyna-agent-runtime-integration`
-- pack_mode: `single-root docs/plan machine-compatible active-pack`
+- pack_mode: `single-root docs/plan machine-compatible completed-pack`
 - source_truth: `docs/roadmap/data-dyna-production-readiness-roadmap.md`, completed P2 auth/tenancy pack, completed P3 observability pack, completed P4 external producer integration pack, completed P5 durable worker foundation pack, accepted P6 Agent-runtime handoff packet, OpenClaw Pi/harness boundary references
 
 ## Current Step
 
-- active_step: `DD-P6-S3`
-- active_wave: `wave-3`
-- mode: `ready_for_execute`
-- intended_handoff: `execute-plan`
+- active_step: `PACK_COMPLETE`
+- active_wave: `wave-closeout`
+- mode: `pack_complete`
+- intended_handoff: `autopilot-closeout`
 
 ## Planned Stages
 
 - [x] `DD-P6-S1` boundary-manager contract and no-fallback runtime decision
 - [x] `DD-P6-S2` prepared attempt seed and read-only tool surface
-- [ ] `DD-P6-S3` single Agent harness and LLM-owned turn loop
-- [ ] `DD-P6-S4` runtime tool-boundary enforcement and audit
-- [ ] `DD-P6-S5` result boundary, validator, and merchant-review gate
-- [ ] `DD-P6-S6` Agent observability, deletion proof, and runbook
-- [ ] `DD-P6-CLOSEOUT-S1` P6 closeout audit
+- [x] `DD-P6-S3` single Agent harness and LLM-owned turn loop
+- [x] `DD-P6-S4` runtime tool-boundary enforcement and audit
+- [x] `DD-P6-S5` result boundary, validator, and merchant-review gate
+- [x] `DD-P6-S6` Agent observability, deletion proof, and runbook
+- [x] `DD-P6-CLOSEOUT-S1` P6 closeout audit
 
 ## Immediate Focus
 
-### `DD-P6-S3`
+### `PACK_COMPLETE`
 
-- Owner: `execute-plan`
-- State: `READY_FOR_EXECUTE`
-- Priority: `high`
+- Owner: `closeout`
+- State: `DONE`
+- Priority: `terminal`
 
 目标：
 
-- Replace the draft-function adapter shape with one selected OpenClaw-like Agent harness path that runs a prepared LLM turn under Data Dyna boundaries and has no runtime/provider/model fallback.
+- close the pack through the repo-local closeout prompt surface
 
 必须交付：
 
-1. Runtime invocation accepts prepared attempt, prompt/system instructions, read-only tools, tool policy, selected provider/model/profile/runtime, session/run audit store, and callbacks.
-2. The harness lets the LLM choose allowed tool calls and draft timing; server code does not orchestrate a fixed business reasoning sequence.
-3. Runtime selection is strict: missing or ambiguous provider/model/profile/auth/tool policy fails closed and records safe audit evidence; no fixture, legacy adapter, alternate provider, alternate model, or relaxed-policy fallback remains reachable.
-4. Tests prove successful local/test harness execution, missing config/auth/model/profile/policy denial, provider/runtime failure audit, and deletion/replacement of obsolete `adapter.draft(...)` or fixture-only runtime paths where superseded.
-
-done_when:
-
-1. Agent runtime invocation cannot occur without a prepared attempt, accepted tool policy, selected runtime/provider/model/profile, prompt ref, and audit store.
-2. The accepted runtime path gives the LLM a tool-governed turn loop rather than a server-side `draft()` function that decides the flow.
-3. Provider/runtime unavailable or misconfigured paths fail closed with safe audit evidence and no secret leakage.
-4. No compatibility runtime, fixture fallback, provider fallback, model fallback, or old adapter path remains reachable in production code.
-5. `npm run test:agent`, `npm run check:boundaries`, `npm run typecheck`, `npm test`, `npm run check:plan`, and `git diff --check` pass.
-
-stop_boundary:
-
-1. Stop if live provider calls are made from default tests without explicit safe credentials and policy proof.
-2. Stop if provider secrets, prompts with sensitive payloads, or model auth values are logged or persisted unsafely.
-3. Stop if adapter output can request Core/business mutations or bypass draft-only result validation.
-4. Stop if provider/runtime failure loses audit evidence or routes through a fallback path.
-5. Stop if server code owns the reasoning/tool-use sequence instead of the LLM/harness.
+1. final closeout summary and residual handoff
 
 必须避免：
 
-1. Do not make production provider availability a prerequisite for local/test acceptance.
-2. Do not keep fixture/legacy adapters as compatibility paths after the selected harness owns the behavior.
-3. Do not treat any local/test harness output as merchant-approved or production model behavior.
-## Current Wave Handoff
-
-- wave_id: `wave-3`
-- parent_step: `DD-P6-S3`
-- selected_slice: `DD-P6-S3`
-- next_handoff: `execute-plan`
-
-Wave-plan result for execution:
-
-1. Replace `src/agent/agent-sidecar.ts`'s production-shaped `adapter.draft(context)` boundary with a single selected `runAgentAttempt({ preparedAttempt, prompt, tools, policy, runtime, audit })` harness surface under `src/agent/**`.
-2. Define strict runtime inputs for prepared attempt, prompt ref, read-only S2 tools, tool-policy/catalog version, selected provider/model/profile/runtime/auth reference, audit store, and LLM/harness callbacks; fail closed before invocation if any required boundary input is missing, ambiguous, stale, blocked, or mismatched.
-3. Use an explicit local/test harness double only as the selected test runtime passed into `runAgentAttempt`; do not keep fixture/provider/model/legacy adapter fallback branches or `adapter.draft(...)` aliases reachable from production code.
-4. Prove LLM-owned flow by recording an ordered harness callback/tool-choice transcript supplied by the test harness, not a server-hardcoded `read summary -> draft -> validate -> submit` sequence.
-5. Update or replace existing agent sidecar tests so `npm run test:agent` proves successful local/test harness execution, missing prepared attempt/prompt/runtime/auth/profile/policy denial, provider/runtime failure audit, no secret leakage, draft-only/no Core-write output, and deletion/replacement of obsolete adapter/fixture surfaces.
-
-Likely execution surfaces: `src/agent/agent-sidecar.ts` or a replacement `src/agent/agent-attempt-harness.ts`, `src/agent/prepared-attempt.ts`, `src/agent/README.md`, `tests/agent-dd-p3-s1.spec.ts`, a new or replacement `tests/agent-runtime-harness-s3.spec.ts`, `package.json`, and parser truth under `docs/plan/*`.
-
-Exit criteria for execute: S3 implementation is ready for same-slice review only after the selected harness path exists, old `adapter.draft(...)`/fixture fallback production path is deleted or no longer imported by production-shaped tests, all S3 fail-closed/audit/no-secret proofs pass, and the active validation ladder passes.
-
+1. dispatching another execute/review phase from terminal parser truth
 ## Current Technical Consensus
 
 - P6 starts only because P2 auth/tenancy, P3 observability, P4 external producer integration, and P5 durable worker foundation reached `PACK_COMPLETE` with accepted evidence.
@@ -103,10 +63,12 @@ npm run check:plan
 git diff --check
 ```
 
-For the active `DD-P6-S3` harness/runtime slice:
+For the accepted `DD-P6-S6` Agent observability, deletion proof, and runbook slice:
 
 ```bash
 npm run test:agent
+npm run test:review
+npm run probe:observability
 npm run check:boundaries
 npm run typecheck
 npm test
@@ -137,8 +99,8 @@ npm run test:app:workers
 
 ## Blockers
 
-- None currently known for `DD-P6-S3` execution.
-- Live provider credentials, production Agent deployment, cloud secrets, production dashboards/SLOs/paging/incidents, and mature model operations are not prerequisites for S2 and remain residual unless a later P6 slice explicitly accepts them.
+- None currently known for `DD-P6-CLOSEOUT-S1` closeout.
+- Live provider credentials, production Agent deployment, cloud secrets, production dashboards/SLOs/paging/incidents, and mature model operations are not prerequisites for DD-P6-S6 local/test proof and remain residual unless a later pack explicitly accepts them.
 
 ## Residuals / Notes
 
@@ -155,6 +117,84 @@ npm run test:app:workers
 - P6 replan hardened the pack around boundary management, LLM-owned flow, and no compatibility/fallback/dead-code preservation.
 
 ## Latest Execution Evidence
+
+### `DD-P6-CLOSEOUT-S1` closeout review
+
+- Review audited accepted P6 evidence across the boundary-manager contract, prepared attempt/read-only tool surface, selected harness, runtime tool policy, draft-only result boundary, validator/merchant-review gate, Agent observability/probe/runbook, deletion audit, parser truth, residual handoff, and master tracker recommendation.
+- Verdict: accepted with successor residuals for production dashboards, paging, mature SLOs, incident management, cloud secrets, deployment hardening, capacity planning, production model operations, live provider rollout, and any future accepted Agent limitations.
+- Validation during closeout review: `npm run test:agent`; `npm run test:review`; `npm run test:evidence`; `npm run probe:observability`; `npm run check:boundaries`; `npm run typecheck`; `npm test`; `npm run check:plan`; `git diff --check`; plan_sync.
+- Master tracker recommendation: route `master_plan` / `plan-creator` after repo-local closeout to mark `DD-PR-MASTER-P6` done and activate `DD-PR-MASTER-CLOSEOUT-S1` for production-readiness master closeout.
+- Parser truth now marks this pack `PACK_COMPLETE`; repo-local closeout prompt surface is the only next route for this completed pack.
+
+### `DD-P6-S6` review wave-6
+
+- Review confirmed `src/agent/observability.ts` builds a bounded local/test report with prepared-attempt, policy, runtime-selection, harness, tool-call, tool-denial, sanitized-result, draft-capture, validator, review-handoff, and provider/runtime-failure coverage booleans.
+- Review confirmed `src/agent/agent-sidecar.ts` records `runtimeUsage` and latency on `draft_captured`, latency and redacted reason on `run_failed`, rejects sensitive prompt/runtime selection text before harness invocation, and redacts transcript/tool-result/error summaries.
+- Review confirmed `scripts/probe-agent-runtime-observability.ts` demonstrates successful selected runtime, denied tool call, provider/runtime failure, sensitive prompt blocking, validator rejection, merchant-review request, runtime usage/cost metadata, and deletion proof without live provider or production infrastructure.
+- Review confirmed deletion proof scans production Agent sources for removed compatibility/fallback surfaces; remaining `draft_experiment_plan` strings are draft-operation labels in `context-bundle.ts`, not active runtime tool aliases or fallback paths.
+- Targeted review validation passed: `npm run test:agent`; `npm run probe:observability`; `npm run check:boundaries`; `npm run typecheck`.
+- Parser truth advanced to `DD-P6-CLOSEOUT-S1` for P6 closeout audit.
+
+### `DD-P6-S6` execute wave-6
+
+- Added `src/agent/observability.ts` to build bounded local/test Agent runtime observability reports from audit events, including event counts, coverage booleans, local metric counters, latency, optional runtime usage/cost metadata, deletion proof, and residual operations notes.
+- Extended `src/agent/agent-sidecar.ts` to carry optional runtime usage metadata on captured drafts, record latency on `draft_captured` and `run_failed`, and redact raw-payload/customer/payment/provider-secret patterns from runtime failure text before audit persistence.
+- Added `scripts/probe-agent-runtime-observability.ts` and wired it into `npm run test:agent`, `npm run probe:observability`, and `npm test`; the probe proves success, denied policy/tool call, provider/runtime failure, validator rejection, review handoff request, safe bounded output, runtime usage/cost fields, and deletion proof.
+- Added `docs/agent/agent-runtime-observability-runbook.md` and `docs/agent/agent-runtime-deletion-audit.md`; production dashboards/SLOs/paging/incidents and cloud secret/deployment hardening remain residual operations maturity.
+- Validation passed: `npm run test:agent`; `npm run test:review`; `npm run probe:observability`; `npm run check:boundaries`; `npm run typecheck`; `npm test`; `npm run check:plan`; `git diff --check`.
+- Next deterministic handoff: same-slice review via `execution-reality-audit`; do not advance to `DD-P6-CLOSEOUT-S1` before review accepts S6 evidence.
+
+### `DD-P6-S5` review wave-5
+
+- Review confirmed `src/agent/result-boundary.ts` keeps Agent drafts as `agent_draft_not_core_truth`, parses deterministic hypothesis/experiment-plan artifacts, runs `validateExperimentPlan`, audits `draft_validation_evaluated`, and blocks merchant-review requests unless validation accepts.
+- Review confirmed merchant-review request handoff is explicit and auditable: `merchant_review_requested` records `merchantApprovalImplied=false` and `businessMutationCalled=false`, while `submitExperimentPlanForMerchantReview` still rejects non-accepted validator results.
+- Review found and repaired one in-scope deletion gap: the old static fixture draft helper remained exported from production `src/agent/experiment-plan.ts`. It was moved to `tests/support/experiment-plan-fixture.ts`, and `tests/agent-runtime-result-boundary-s5.spec.ts` now proves the production Agent plan module no longer exposes that helper.
+- Validation passed after review repair: `npm run test:agent`; `npm run test:review`; `npm run test:evidence`; `npm run check:boundaries`; `npm run typecheck`; `npm test`; `npm run check:plan`; `git diff --check`.
+- Parser truth advanced to `DD-P6-S6` for Agent observability, deletion proof, and runbook execution.
+
+### `DD-P6-S5` execute wave-5
+
+- Added `src/agent/result-boundary.ts` to parse captured Agent drafts into deterministic `InterventionHypothesis` and `ExperimentPlan` artifacts, run `validateExperimentPlan`, and audit `draft_validation_evaluated` before any merchant-review request is allowed.
+- Added explicit `requestMerchantReviewForAgentDraft(...)` handoff that calls the existing merchant-review submission seam only after an accepted validation gate, audits `merchant_review_requested`, sets `merchantApprovalImplied=false`, and never executes business mutations.
+- Kept `runAgentAttempt` as draft-capture only; S5 tests prove no automatic merchant-review submit occurs during the harness turn.
+- Added `tests/agent-runtime-result-boundary-s5.spec.ts` and wired it into `npm run test:agent` / `npm test`; tests cover valid draft review request, missing evidence, invented evidence, forbidden Core-write draft failure, bypassed blocked-validation submission, and audit events.
+- Updated `migrations/0005_agent_runs.sql`, `src/agent/README.md`, `docs/agent-sidecar-v1.md`, `docs/agent-experiment-plan-v1.md`, and `src/agent/context-bundle.ts` for result-gate terminology and audit events.
+- Validation passed: `npm run test:agent`; `npm run test:review`; `npm run test:evidence`; `npm run check:boundaries`; `npm run typecheck`; `npm test`; `npm run test:db:migrations`; `npm run check:schema-migrations`; `npm run check:plan`; `git diff --check`.
+- Next deterministic handoff: same-slice review via `execution-reality-audit`; do not advance to `DD-P6-S6` before review accepts S5 evidence.
+
+### `DD-P6-S4` review wave-4
+
+- Review confirmed `runAgentAttempt` rejects unregistered tool surfaces before `harness_invoked`, wraps every runtime tool call, emits auditable `tool_call_attempt` / `tool_call_denied` / `tool_result_sanitized` events, redacts and bounds tool results, and passes the harness a frozen runtime policy.
+- Review found and repaired one in-scope drift: `src/agent/agent-tools.ts` still allowed old P3 tool names (`draft_experiment_plan`, `validate_experiment_plan`, `submit_for_merchant_review`) through its safe policy helper. The active safe policy surface now lists only the P6 prepared read-only tool names, and `tests/agent-dd-p3-s2.spec.ts` proves the old draft tool name is denied.
+- Validation passed after review repair: `npm run test:agent`; `npm run check:boundaries`; `npm run typecheck`; `npm test`; `npm run test:db:migrations`; `npm run check:schema-migrations`; `npm run check:plan`; `git diff --check`.
+- Parser truth advanced to `DD-P6-S5` for result boundary, validator, and merchant-review gate execution.
+
+### `DD-P6-S4` execute wave-4
+
+- Added an async runtime tool boundary in `src/agent/agent-sidecar.ts` so `runAgentAttempt` rejects unregistered tool surfaces before harness invocation and passes the harness only policy-wrapped tools.
+- Added per-call audit events for `tool_call_attempt`, `tool_call_denied`, and `tool_result_sanitized`, including policy version, mutation policy, allowed tools, denied reasons, and sanitized result byte counts.
+- Froze accepted runtime policy before passing it to the harness so provider/model code cannot expand `allowedToolNames` or override default-deny behavior.
+- Added `tests/agent-runtime-tool-boundary-s4.spec.ts` and wired it into `npm run test:agent` / `npm test`; updated S3 harness tests for audited tool events.
+- Updated `migrations/0005_agent_runs.sql`, `src/agent/README.md`, and `docs/agent-sidecar-v1.md` for S4 tool-boundary audit events and behavior.
+- Validation passed: `npm run test:agent`; `npm run check:boundaries`; `npm run typecheck`; `npm test`; `npm run check:plan`; `git diff --check`; `npm run test:db:migrations`; `npm run check:schema-migrations`.
+- Next deterministic handoff: same-slice review via `execution-reality-audit`; do not advance to `DD-P6-S5` before review accepts S4 evidence.
+
+### `DD-P6-S3` review wave-3
+
+- Review accepted S3 after repairing the callback/model/profile/harness proof gap in `src/agent/agent-sidecar.ts`, `tests/agent-runtime-harness-s3.spec.ts`, `src/agent/README.md`, and `docs/agent-sidecar-v1.md`.
+- Confirmed `runAgentAttempt` requires prepared attempt, accepted policy, selected provider/model/profile/runtime/auth ref, prompt, read-only tools, audit store, and harness callbacks before runtime invocation.
+- Confirmed local/test selected harness owns tool order and transcript; server records audit/transcript events and does not call an `adapter.draft(...)` path.
+- Validation passed: `npm run test:agent`; `npm run check:boundaries`; `npm run typecheck`; `npm test`; `npm run check:plan`; `git diff --check`; `npm run test:db:migrations`; `npm run check:schema-migrations`.
+- Parser truth advanced to `DD-P6-S4` for runtime tool-boundary enforcement and audit wave planning.
+
+### `DD-P6-S3` execute wave-3
+
+- Replaced the production-shaped `adapter.draft(context)` sidecar with `runAgentAttempt({ preparedAttempt, prompt, tools, policy, runtime, audit })` in `src/agent/agent-sidecar.ts`.
+- Added selected runtime/provider/model/profile/auth/prompt/policy gates, prepared-attempt consumability checks, redaction-safe failure audit, and harness-supplied transcript events proving LLM/harness-owned tool order.
+- Added `tests/agent-runtime-harness-s3.spec.ts` and wired it into `npm run test:agent` / `npm test`; updated legacy P3 sidecar tests to focus on context/migration boundaries.
+- Updated `docs/agent-sidecar-v1.md`, `src/agent/README.md`, and `migrations/0005_agent_runs.sql` for the harness/audit schema and removed obsolete fixture/adapter production surface.
+- Validation passed: `npm run test:agent`; `npm run check:boundaries`; `npm run typecheck`; `npm run test:db:migrations`; `npm test`; `npm run check:plan`; `git diff --check`.
+- Next deterministic handoff: same-slice review via `execution-reality-audit`; do not advance to `DD-P6-S4` before review accepts S3 evidence.
 
 ### `DD-P6-S3` wave_plan wave-3
 
@@ -193,18 +233,24 @@ npm run test:app:workers
 
 ## Machine State
 
-- active_step: `DD-P6-S3`
-- latest_completed_step: `DD-P6-S2`
-- intended_handoff: `execute-plan`
-- latest_closeout_summary: Accepted DD-P6-S2 and activated DD-P6-S3.
+- active_step: `PACK_COMPLETE`
+- latest_completed_step: `PACK_COMPLETE`
+- intended_handoff: `autopilot-closeout`
+- latest_closeout_summary: P6 Agent runtime integration closeout is complete.
 - latest_verification:
-  - `Confirmed prepared attempts record freshness refs, seed hash, budgets, catalog version, forbidden capabilities, statuses, and safe failure reasons.`
-  - `Added source-scope mismatch fail-closed proof, typed read_dead_letter_diagnosis tool-surface proof, and tool-result budget proof.`
-  - `Validation passed: npm run test:agent; npm run test:app:workers; npm run check:boundaries; npm run typecheck; npm test; npm run check:plan; git diff --check.`
-  - `Post-writeback checks passed: npm run check:plan; git diff --check; npm run test:agent; plan_sync reports active pack done=2 pending=5.`
-  - `src/agent/prepared-attempt.ts`
-  - `tests/agent-prepared-attempt-s2.spec.ts`
+  - `Completed waves: S1 boundary contract; S2 prepared attempts/tools; S3 selected harness; S4 default-deny runtime tool boundary; S5 draft-only result gate and merchant-review request; S6 observability/probe/deletion proof; closeout audit.`
+  - `Validation gathered: npm run test:agent; npm run test:review; npm run test:evidence; npm run probe:observability; npm run check:boundaries; npm run typecheck; npm test; npm run check:plan; git diff --check.`
+  - `Current closeout verification: npm run check:plan passed; git diff --check passed; plan_sync docs/plan reports data-dyna-agent-runtime-integration STATUS/WORKSET done=7 pending=0.`
+  - `Safety evidence: Agent remains draft-only, read-only tool bounded, default-deny, validator/merchant-review gated, redaction/audit covered, and deletion proof reports obsolete runtime/fallback surfaces removed from production.`
   - `docs/plan/README.md`
   - `docs/plan/data-dyna-agent-runtime-integration_PLAN.md`
   - `docs/plan/data-dyna-agent-runtime-integration_STATUS.md`
   - `docs/plan/data-dyna-agent-runtime-integration_WORKSET.md`
+  - `src/agent/agent-sidecar.ts`
+  - `src/agent/prepared-attempt.ts`
+  - `src/agent/result-boundary.ts`
+  - `src/agent/observability.ts`
+  - `scripts/probe-agent-runtime-observability.ts`
+  - `docs/agent/agent-runtime-deletion-audit.md`
+  - `docs/agent/agent-runtime-observability-runbook.md`
+- terminal: `true`
