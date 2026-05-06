@@ -1,10 +1,10 @@
 # data-dyna
 
-Deterministic Data Core and Evidence Service foundation for independent cafés.
+面向独立咖啡店的确定性 Data Core 与 Evidence Service 基础项目。
 
-`data-dyna` is the operating-evidence hub for restaurant SaaS: it turns producer events, POS facts, merchant actions, benchmark gaps, Agent drafts, merchant review decisions, and measured outcomes into a reproducible evidence chain.
+`data-dyna` 是餐饮 SaaS 的经营证据中枢：把 producer 事件、POS 事实、商户动作、benchmark gap、Agent 草稿、商户 review 决策和效果复盘，串成可复现、可审计的经营证据链。
 
-## Current positioning
+## 当前定位
 
 ```text
 Data Core owns facts.
@@ -14,9 +14,9 @@ Merchant owns decisions.
 Evidence Store owns proof.
 ```
 
-`data-dyna` is not a POS, mini-program, mobile-hq UI, PostHog replacement, or autonomous business-mutation Agent. It receives standardized facts and produces auditable operating evidence.
+`data-dyna` 不是 POS、小程序、mobile-hq UI、PostHog 替代品，也不是可自主执行业务变更的 Agent。它接收标准化事实，产出可审计的经营证据。
 
-## Business flow
+## 业务闭环
 
 ```text
 Event Contract
@@ -30,118 +30,118 @@ Event Contract
   -> Evidence store / effect and guardrail review
 ```
 
-Primary evidence question:
+核心证据问题：
 
 ```text
-For which type of café, which problem was found, which action was tried,
-what changed, what guardrails moved, and did the merchant actually adopt it?
+什么类型的咖啡店，发现了什么问题，尝试了什么动作，
+主指标如何变化，guardrail 是否恶化，商户是否真的采纳？
 ```
 
-## Repository map
+## 目录结构
 
-| Path | Owns |
+| 路径 | 职责 |
 |---|---|
-| `src/contracts/` | Unified event contract and Zod schemas. |
-| `src/ingestion/` | Event validation, raw-event persistence contract, invalid-event audit, optional PostHog mirror boundary. |
-| `src/projections/` | Deterministic rebuild of sessions, carts, orders, payments, refunds, menus, members, and merchant actions. |
-| `src/snapshots/` | Independent café profiles, segment candidates, metric definitions, and metric snapshots. |
-| `src/benchmarks/` | Aggregate-only peer benchmarks and directional opportunity gaps. |
-| `src/agent/` | Agent context, read-only prepared attempts, safe tool policy, draft artifacts, and deterministic validation. |
-| `src/merchant-review/` | Merchant review, accept/reject/modify, application lifecycle, and preference confirmation contracts. |
-| `src/evidence/` | Before/after effects, guardrail results, intervention trajectories, and evidence records. |
-| `src/app/` | Fastify app adapters, auth boundary, runtime config, PostgreSQL repositories, producer delivery, observability, and local/test workers. |
-| `migrations/` | PostgreSQL schema for raw events, projections, snapshots, benchmarks, Agent runs, review, evidence, tenancy, and worker jobs. |
-| `tests/` | Slice-level contract, core, runtime, Agent, review, evidence, producer, and worker tests. |
-| `docs/plan/` | Repo-local machine-readable active plan control plane. |
+| `src/contracts/` | 统一事件合同与 Zod schema。 |
+| `src/ingestion/` | 事件校验、raw-event persistence contract、invalid-event audit、可选 PostHog mirror boundary。 |
+| `src/projections/` | 确定性重建 sessions、carts、orders、payments、refunds、menus、members、merchant actions。 |
+| `src/snapshots/` | 独立咖啡店 profile、segment candidate、metric definition、metric snapshot。 |
+| `src/benchmarks/` | aggregate-only peer benchmark 与 directional opportunity gap。 |
+| `src/agent/` | Agent context、read-only prepared attempt、安全 tool policy、draft artifact、确定性 validator。 |
+| `src/merchant-review/` | 商户 review、accept/reject/modify、application lifecycle、preference confirmation contract。 |
+| `src/evidence/` | before/after effect、guardrail result、intervention trajectory、evidence record。 |
+| `src/app/` | Fastify app adapter、auth boundary、runtime config、PostgreSQL repository、producer delivery、observability、local/test worker。 |
+| `migrations/` | raw event、projection、snapshot、benchmark、Agent run、review、evidence、tenancy、worker job 的 PostgreSQL schema。 |
+| `tests/` | contract、core、runtime、Agent、review、evidence、producer、worker 的 slice-level 测试。 |
+| `docs/plan/` | repo-local machine-readable active plan control plane。 |
 
-## Runtime and dependencies
+## 运行环境与依赖
 
 - Node.js `>=24`
 - TypeScript ESM
-- Fastify for HTTP adapters
-- `pg` / node-postgres for PostgreSQL adapter code
-- Zod for runtime schemas and TypeScript inference
-- Docker Compose for local PostgreSQL test substrate
+- Fastify：HTTP adapter
+- `pg` / node-postgres：PostgreSQL adapter code
+- Zod：runtime schema 与 TypeScript inference
+- Docker Compose：本地 PostgreSQL 测试基座
 
-Install:
+安装依赖：
 
 ```bash
 npm install
 ```
 
-Start local PostgreSQL for DB-backed gates:
+启动本地 PostgreSQL 测试库并执行 migration：
 
 ```bash
 npm run db:test:up
 npm run db:migrate:test
 ```
 
-Start the app locally:
+本地启动应用：
 
 ```bash
 npm run app:dev
 ```
 
-## Key commands
+## 常用命令
 
-| Command | Purpose |
+| 命令 | 用途 |
 |---|---|
-| `npm test` | Full local regression chain. |
-| `npm run test:contracts` | Event contract and producer mapping contract checks. |
-| `npm run test:core` | Ingestion, projections, snapshots, and benchmarks. |
-| `npm run test:agent` | Agent context, prepared attempt, runtime-contract, and validator gates. |
-| `npm run test:review` | Merchant review lifecycle. |
-| `npm run test:evidence` | Evidence store and guardrail verdicts. |
-| `npm run test:runtime` | PostgreSQL-backed runtime route/repository integration path. |
-| `npm run test:app:workers` | Durable local/test worker repository and executor checks. |
-| `npm run check:boundaries` | Import boundary guardrail for Core / Agent / Evidence planes. |
-| `npm run check:schema-migrations` | Schema/migration safety smoke check. |
-| `npm run check:plan` | Repo-local `docs/plan` parser truth check. |
-| `npm run typecheck` | TypeScript type check. |
+| `npm test` | 完整本地回归链路。 |
+| `npm run test:contracts` | Event contract 与 producer mapping contract 检查。 |
+| `npm run test:core` | Ingestion、projections、snapshots、benchmarks。 |
+| `npm run test:agent` | Agent context、prepared attempt、runtime-contract、validator gate。 |
+| `npm run test:review` | Merchant review lifecycle。 |
+| `npm run test:evidence` | Evidence store 与 guardrail verdict。 |
+| `npm run test:runtime` | PostgreSQL-backed runtime route/repository integration path。 |
+| `npm run test:app:workers` | Durable local/test worker repository 与 executor 检查。 |
+| `npm run check:boundaries` | Core / Agent / Evidence 平面的 import boundary guardrail。 |
+| `npm run check:schema-migrations` | Schema/migration safety smoke check。 |
+| `npm run check:plan` | repo-local `docs/plan` parser truth 检查。 |
+| `npm run typecheck` | TypeScript type check。 |
 
-For docs-only edits, minimum validation is:
+文档-only 修改的最小验证：
 
 ```bash
 git diff --check
 ```
 
-## Active plan control plane
+## 当前计划控制面
 
-Current machine-readable plan entrypoint:
+当前 machine-readable 计划入口：
 
 ```text
 docs/plan/README.md
 ```
 
-Current active pack at the time this README was created:
+创建本 README 时的 active pack：
 
 ```text
 data-dyna-agent-runtime-integration
 ```
 
-Current active slice:
+当前 active slice：
 
 ```text
 DD-P6-S3 — single Agent harness and LLM-owned turn loop
 ```
 
-Use `docs/plan/README.md`, the active `*_STATUS.md`, and the active `*_WORKSET.md` as source of truth before continuing implementation. Do not resume completed packs unless a future replan explicitly reopens them.
+继续实现前，以 `docs/plan/README.md`、active `*_STATUS.md`、active `*_WORKSET.md` 为 source of truth。不要恢复已完成 pack，除非后续 replan 明确重新打开。
 
-## Architecture rules
+## 架构规则
 
-1. Core modules stay deterministic: no HTTP framework, DB client, queue client, runtime config, provider credentials, or production I/O inside Core.
-2. POS/payment/refund facts are authoritative for transaction outcomes; mini-program checkout events are attribution signals, not final payment facts.
-3. PostHog is an async product-analytics mirror only, not the source of operating truth.
-4. Peer benchmarks are aggregate-only and must not expose peer store or customer identity.
-5. Agent output is `agent_draft_not_core_truth` until deterministic validation and merchant-review gates accept the next state.
-6. Agent tools must not mutate orders, metrics, benchmarks, evidence facts, menus, prices, coupons, customer messages, worker state, or Core facts.
-7. LLM claims must not be inserted as evidence facts.
-8. Merchant review is the human decision boundary; review submission does not imply approval or business execution.
-9. Production readiness must not be claimed without deployment, auth/tenancy, observability, worker reliability, provider-runtime, and external-producer proof.
+1. Core 模块保持 deterministic：不要把 HTTP framework、DB client、queue client、runtime config、provider credential 或 production I/O 放进 Core。
+2. POS/payment/refund 事实是交易结果权威源；小程序 checkout 事件只是 attribution signal，不是最终支付事实。
+3. PostHog 只是异步产品分析镜像，不是经营事实源。
+4. Peer benchmark 必须 aggregate-only，不能暴露 peer store 或 customer identity。
+5. Agent 输出在 deterministic validation 与 merchant-review gate 接受下一状态前，始终是 `agent_draft_not_core_truth`。
+6. Agent tools 不能 mutate orders、metrics、benchmarks、evidence facts、menus、prices、coupons、customer messages、worker state 或 Core facts。
+7. LLM claim 不能写入 evidence fact。
+8. Merchant review 是人类决策边界；提交 review 不等于商户批准，也不等于业务执行。
+9. 没有 deployment、auth/tenancy、observability、worker reliability、provider-runtime、external-producer proof 前，不能声称 production ready。
 
 ## Human-critical surfaces
 
-Treat these as high-risk and require focused review before changes:
+以下路径是高风险修改面，变更前需要聚焦 review：
 
 ```text
 migrations/**
@@ -154,20 +154,20 @@ src/app/auth/**
 src/app/workers/**
 ```
 
-## Source-of-truth docs
+## Source-of-truth 文档
 
-| Doc | Use when |
+| 文档 | 使用场景 |
 |---|---|
-| `docs/current-architecture-and-vibecoding-review.md` | Need the current architecture and AI-coder boundary overview. |
-| `docs/data-dyna-core-service-purpose.md` | Need the product/service purpose in business terms. |
-| `docs/runtime-foundation-decision.md` | Need runtime decisions for Fastify, PostgreSQL, and worker seams. |
-| `docs/agent/agent-runtime-boundary-contract.md` | Need the P6 Agent runtime boundary-manager contract. |
-| `docs/workers/durable-worker-foundation.md` | Need accepted durable worker execution model. |
-| `docs/workers/p6-agent-runtime-handoff.md` | Need P5-to-P6 Agent read-only handoff contract. |
-| `docs/human-critical-review-policy.md` | Need review policy for high-risk state, evidence, and mutation-adjacent surfaces. |
-| `docs/plan/README.md` | Need current repo-local active plan state. |
+| `docs/current-architecture-and-vibecoding-review.md` | 需要当前架构与 AI-coder 边界总览。 |
+| `docs/data-dyna-core-service-purpose.md` | 需要业务语义下的 product/service purpose。 |
+| `docs/runtime-foundation-decision.md` | 需要 Fastify、PostgreSQL、worker seam 的 runtime decision。 |
+| `docs/agent/agent-runtime-boundary-contract.md` | 需要 P6 Agent runtime boundary-manager contract。 |
+| `docs/workers/durable-worker-foundation.md` | 需要已接受的 durable worker execution model。 |
+| `docs/workers/p6-agent-runtime-handoff.md` | 需要 P5-to-P6 Agent read-only handoff contract。 |
+| `docs/human-critical-review-policy.md` | 需要高风险 state、evidence、mutation-adjacent surfaces 的 review policy。 |
+| `docs/plan/README.md` | 需要当前 repo-local active plan state。 |
 
-## Local database lifecycle
+## 本地数据库生命周期
 
 ```bash
 npm run db:test:up
@@ -177,13 +177,13 @@ npm run test:runtime
 npm run db:test:down
 ```
 
-Reset local PostgreSQL test data:
+重置本地 PostgreSQL 测试数据：
 
 ```bash
 npm run db:test:reset
 npm run test:db:migrations
 ```
 
-## Production status
+## 生产状态
 
-The repository has accepted foundations for local/test runtime, auth/tenancy, observability, POS producer delivery, durable worker jobs, and the start of Agent runtime integration. It is still not a complete production system until later accepted work proves production deployment, cloud secret handling, mature observability/SLOs, provider operations, scheduler reliability, and real external-producer rollout.
+本仓库已经完成 local/test runtime、auth/tenancy、observability、POS producer delivery、durable worker jobs 的基础，并已开始 Agent runtime integration。它仍不是完整生产系统；后续必须用已接受的工作证明 production deployment、cloud secret handling、成熟 observability/SLO、provider operations、scheduler reliability 与真实 external-producer rollout 后，才能声明生产就绪。
